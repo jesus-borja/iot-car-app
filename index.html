@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito IoT - Control</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="dark">
+    <header>
+        <div class="header-left">
+            <h1>Carrito IoT</h1>
+        </div>
+        <nav class="header-right">
+            <button class="nav-button active">Control</button>
+            <button class="nav-button">Monitoreo</button>
+        </nav>
+    </header>
+
+    <main class="control-layout">
+        <section class="speed-control">
+            <h2>Velocidad</h2>
+            <div class="speed-buttons">
+                <button class="speed-btn" data-speed="rapido">Rápido</button>
+                <button class="speed-btn active" data-speed="normal">Normal</button>
+                <button class="speed-btn" data-speed="lento">Lento</button>
+                <button class="speed-btn" data-speed="reversa">Reversa</button>
+            </div>
+        </section>
+
+        <section class="direction-control">
+            <h2>Movimiento</h2>
+            <div class="directional-pad-container">
+                <canvas id="controlCanvas" width="400" height="400"></canvas>
+                <button class="stop-btn" data-action="detener" style="position: absolute; z-index: 10;">Detener</button>
+            </div>
+        </section>
+
+        <section class="history-log">
+            <h2>Últimos Movimientos</h2>
+            <ul id="movement-history">
+                <li>Inicializando...</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Hecho por <a href="https://github.com/jesus-borja" target="_blank">Jesús Borja</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

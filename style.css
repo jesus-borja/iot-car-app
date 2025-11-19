@@ -1,0 +1,300 @@
+/* Variables de color Gruvbox Pastel Dark */
+:root {
+    --bg: #282828;
+    --bg-dark: #1d2021;
+    --fg: #ebdbb2;
+    --red-p: #fb4934; /* Usado para Detener */
+    --green-p: #b8bb26; /* Usado para Velocidad Activa */
+    --blue-p: #83a598; /* Usado para Controles */
+    --gray-p: #928374; /* Usado para Bordes/Texto Secundario */
+    --orange-p: #fe8019; /* Usado para Hover */
+
+    /* Posicionamiento y Rotación de los 8 Botones */
+    /* Los botones se colocan en el borde del círculo y se rotan para apuntar hacia afuera */
+    --radius: 175px; /* Radio de distancia desde el centro (mitad de 400px menos un margen) */
+    --btn-offset: 50%; /* Para centrar el botón en su posición radial */
+}
+
+/* Estilos Globales y Tipografía */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Arial", sans-serif;
+    background-color: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Encabezado (Header) */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--bg-dark);
+    border-bottom: 2px solid var(--gray-p);
+}
+
+.header-right .nav-button {
+    background: none;
+    border: none;
+    color: var(--gray-p);
+    padding: 0.5rem 1rem;
+    margin-left: 1rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.3s, border-bottom 0.3s;
+}
+
+.header-right .nav-button:hover {
+    color: var(--fg);
+}
+
+.header-right .nav-button.active {
+    color: var(--blue-p);
+    border-bottom: 2px solid var(--blue-p);
+}
+
+/* Contenedor Principal (Main) - Diseño de 3 Columnas */
+.control-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr; /* 25% | 50% | 25% aprox */
+    gap: 2rem;
+    padding: 2rem;
+    flex-grow: 1;
+}
+
+h2 {
+    color: var(--blue-p);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+section {
+    padding: 1.5rem;
+    background-color: var(--bg-dark);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* 1. Control de Velocidad (Speed Control) */
+.speed-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.speed-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+}
+
+.speed-btn {
+    width: 120px;
+    padding: 1rem 0;
+    border-radius: 50px; /* Forma de pastilla */
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--fg);
+    background-color: var(--gray-p);
+    border: 3px solid var(--gray-p);
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.speed-btn:hover {
+    background-color: var(--orange-p);
+    border-color: var(--orange-p);
+}
+
+.speed-btn.active {
+    background-color: var(--green-p);
+    border-color: var(--green-p);
+    color: var(--bg-dark);
+}
+
+/* 2. Control Direccional (Directional Control) */
+.direction-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.directional-pad-container {
+    position: relative; /* ¡IMPORTANTE! Para posicionar el botón Detener */
+    width: 400px;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#controlCanvas {
+    /* Estilos del Canvas */
+    border-radius: 50%;
+    border: 3px solid var(--gray-p);
+    background-color: var(--bg); /* Fondo del Canvas */
+}
+
+/* Ajuste del botón Detener para centrarlo sobre el Canvas */
+.stop-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrado perfecto */
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: var(--red-p);
+    color: var(--bg-dark);
+    font-weight: bold;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.1s;
+}
+
+.stop-btn:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+/* Estilo Base para los 8 botones direccionales */
+.dir-btn {
+    position: absolute;
+    width: 100px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--fg);
+    background-color: var(--blue-p);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s;
+    transform-origin: center; /* Punto de rotación por defecto */
+}
+
+.dir-btn:hover {
+    background-color: var(--orange-p);
+}
+
+.top {
+    top: 0;
+    left: 50%;
+    transform: translate(-var(--btn-offset), calc(-var(--radius) + 35px))
+        rotate(0deg);
+}
+.top-right {
+    top: 50%;
+    left: 50%;
+    transform: translate(
+            calc(125px * cos(315deg)) - var(--btn-offset),
+            calc(125px * sin(315deg)) - var(--btn-offset)
+        )
+        rotate(45deg); /* Ajuste manual para que encaje mejor */
+    /* Posicionamiento más preciso usando funciones trigonométricas con el centro */
+    /* top: calc(50% - ($radius * cos(45deg)) - 17.5px); */
+    /* left: calc(50% + ($radius * sin(45deg)) - 50px); */
+    transform: translate(calc(50% + 125px), calc(50% - 17.5px)) rotate(45deg);
+    top: calc(50% - 130px);
+    left: calc(50% + 100px);
+    transform: rotate(45deg) translate(-50%, -50%);
+    /* Como el posicionamiento circular exacto es complejo en CSS puro,
+       lo haremos más simple usando translate y rotación: */
+    top: 50%;
+    left: 50%;
+    transform: translate(120px, -120px) rotate(45deg);
+}
+
+/* Usaremos posicionamiento simplificado y transformaciones */
+
+.top {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -15px); /* Arriba, centrado horizontalmente */
+}
+.top-right {
+    top: 50%;
+    left: 50%;
+    transform: translate(100px, -100px) rotate(45deg);
+}
+.right {
+    top: 50%;
+    right: 0;
+    transform: translate(15px, -50%) rotate(90deg); /* Derecha, centrado verticalmente */
+}
+.bottom-right {
+    top: 50%;
+    left: 50%;
+    transform: translate(100px, 100px) rotate(135deg);
+}
+.bottom {
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 15px); /* Abajo, centrado horizontalmente */
+}
+.bottom-left {
+    top: 50%;
+    left: 50%;
+    transform: translate(-100px, 100px) rotate(225deg);
+}
+.left {
+    top: 50%;
+    left: 0;
+    transform: translate(-15px, -50%) rotate(270deg); /* Izquierda, centrado verticalmente */
+}
+.top-left {
+    top: 50%;
+    left: 50%;
+    transform: translate(-100px, -100px) rotate(315deg);
+}
+
+/* 3. Historial de Movimientos (History Log) */
+.history-log {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+#movement-history {
+    list-style: none;
+    padding: 0;
+}
+
+#movement-history li {
+    background-color: var(--bg);
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid var(--green-p);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Pie de Página (Footer) */
+footer {
+    padding: 1rem;
+    text-align: center;
+    background-color: var(--bg-dark);
+    color: var(--gray-p);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--bg);
+}
+
+footer a {
+    color: var(--blue-p);
+    text-decoration: none;
+}

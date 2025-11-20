@@ -1,9 +1,9 @@
 // Configuración de la API (simulada)
-const API_BASE_URL = "https://api.tucaritaiot.com";
+const API_BASE_URL = "http://34.237.107.4";
 
-// Definición de las 8 acciones. ¡Ya no necesitan ángulos definidos!
+// Definición de las 8 acciones
 const ACTIONS = [
-    { name: "adelante", text: "Adelante" }, // Debe ser la primera para estar en la parte superior
+    { name: "adelante", text: "Adelante" }, // La primera se coloca en la parte superior
     { name: "vuelta-adelante-derecha", text: "V. Adelante Derecha" },
     { name: "90-derecha", text: "90° Derecha" },
     { name: "vuelta-atras-derecha", text: "V. Atrás Derecha" },
@@ -208,56 +208,6 @@ async function loadMovementHistory(newAction = null, newSpeed = null) {
 }
 
 /**
- * 💡 Inicializa los eventos y la carga de datos al cargar la página.
- */
-function initializeApp() {
-    const speedButtons = document.querySelectorAll(".speed-btn");
-    const stopButton = document.querySelector(".stop-btn");
-    const canvas = document.getElementById("controlCanvas");
-    const ctx = canvas.getContext("2d");
-
-    let currentSpeed = "normal";
-
-    // 1. Configuración de Velocidad
-    speedButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            speedButtons.forEach((btn) => btn.classList.remove("active"));
-            button.classList.add("active");
-            currentSpeed = button.dataset.speed;
-        });
-
-        if (button.classList.contains("active")) {
-            currentSpeed = button.dataset.speed;
-        }
-    });
-
-    // 2. Configuración del Botón DETENER
-    stopButton.addEventListener("click", () => {
-        registerMovement("detener", currentSpeed);
-    });
-
-    // 3. Manejo de Clics en el CANVAS
-    canvas.addEventListener("click", (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        const action = getClickedAction(x, y, canvas);
-
-        if (action) {
-            registerMovement(action, currentSpeed);
-        }
-    });
-
-    // 4. Dibujar el Canvas inicialmente y manejar redimensionamiento
-    drawCanvas(ctx, canvas);
-    window.addEventListener("resize", () => drawCanvas(ctx, canvas));
-
-    // 5. Carga Inicial del Historial
-    loadMovementHistory();
-}
-
-/**
  * 💡 Simulación de la función para hacer una petición POST a la API
  * y registrar un movimiento.
  * @param {string} action - El movimiento a registrar (ej: 'adelante', 'detener').
@@ -336,6 +286,56 @@ async function loadMovementHistory() {
         console.error("❌ Fallo al cargar historial:", error);
         historyList.innerHTML = "<li>Error al cargar el historial.</li>";
     }
+}
+
+/**
+ * 💡 Inicializa los eventos y la carga de datos al cargar la página.
+ */
+function initializeApp() {
+    const speedButtons = document.querySelectorAll(".speed-btn");
+    const stopButton = document.querySelector(".stop-btn");
+    const canvas = document.getElementById("controlCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let currentSpeed = "normal";
+
+    // 1. Configuración de Velocidad
+    speedButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            speedButtons.forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+            currentSpeed = button.dataset.speed;
+        });
+
+        if (button.classList.contains("active")) {
+            currentSpeed = button.dataset.speed;
+        }
+    });
+
+    // 2. Configuración del Botón DETENER
+    stopButton.addEventListener("click", () => {
+        registerMovement("detener", currentSpeed);
+    });
+
+    // 3. Manejo de Clics en el CANVAS
+    canvas.addEventListener("click", (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        const action = getClickedAction(x, y, canvas);
+
+        if (action) {
+            registerMovement(action, currentSpeed);
+        }
+    });
+
+    // 4. Dibujar el Canvas inicialmente y manejar redimensionamiento
+    drawCanvas(ctx, canvas);
+    window.addEventListener("resize", () => drawCanvas(ctx, canvas));
+
+    // 5. Carga Inicial del Historial
+    loadMovementHistory();
 }
 
 // Ejecutar la función de inicialización

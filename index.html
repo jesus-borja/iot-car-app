@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrito IoT - Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body data-theme="dark">
-    <header>
+    <header class="d-flex justify-content-between align-items-center">
         <div class="header-left">
-            <h1>Carrito IoT</h1>
+            <h1 class="m-0">Carrito IoT</h1>
         </div>
         <nav class="header-right">
             <button class="nav-button active">Control</button>
@@ -19,37 +20,55 @@
         </nav>
     </header>
 
-    <main class="control-layout">
-        <section class="speed-control">
-            <h2>Velocidad</h2>
-            <div class="speed-buttons">
-                <button class="speed-btn" data-speed="rapido">Rápido</button>
-                <button class="speed-btn active" data-speed="normal">Normal</button>
-                <button class="speed-btn" data-speed="lento">Lento</button>
-                <button class="speed-btn" data-speed="reversa">Reversa</button>
-            </div>
-        </section>
+    <main class="container-fluid py-4">
+        <div class="row g-4 justify-content-center align-items-start">
 
-        <section class="direction-control">
-            <h2>Movimiento</h2>
-            <div class="directional-pad-container">
-                <canvas id="controlCanvas" width="400" height="400"></canvas>
-                <button class="stop-btn" data-action="detener" style="position: absolute; z-index: 10;">Detener</button>
-            </div>
-        </section>
+            <section class="col-12 col-lg-3 order-2 order-lg-1 speed-control">
+                <h2>Velocidad</h2>
+                <div class="speed-buttons">
+                    <button class="speed-btn" data-speed="rapido">Rápido</button>
+                    <button class="speed-btn active" data-speed="normal">Normal</button>
+                    <button class="speed-btn" data-speed="lento">Lento</button>
+                    <button class="speed-btn" data-speed="reversa">Reversa</button>
+                </div>
+            </section>
 
-        <section class="history-log">
-            <h2>Últimos Movimientos</h2>
-            <ul id="movement-history">
-                <li>Inicializando...</li>
-            </ul>
-        </section>
+            <section class="col-12 col-lg-3 order-2 order-lg-1 speed-control">
+                <h2>Demos</h2>
+                <div class="speed-buttons">
+                    <select name="demo-selection" id="demo-selection">Selecciona una demo
+                        <option value="demo1">Demo1</option>
+                        <option value="demo2">Demo2</option>
+                        <option value="demo3">Demo3</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="col-12 col-lg-6 order-1 order-lg-2 direction-control">
+                <h2>Movimiento</h2>
+                <div class="canvas-wrapper">
+                    <div class="directional-pad-container">
+                        <canvas id="controlCanvas" width="400" height="400"></canvas>
+                        <button class="stop-btn" data-action="detener">Detener</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="col-12 col-lg-3 order-3 order-lg-3 history-log">
+                <h2>Últimos Movimientos</h2>
+                <ul id="movement-history">
+                    <li>Inicializando...</li>
+                </ul>
+            </section>
+        </div>
     </main>
 
-    <footer>
-        <p>Hecho por <a href="https://github.com/jesus-borja" target="_blank">Jesús Borja</a></p>
+    <footer class="mt-auto">
+        <p>&copy; 2025 | Hecho por <a href="#" target="_blank">Persona</a></p>
+        <p><a href="test.html">test websocket</a></p>
     </footer>
 
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script defer src="js/script.js"></script>
 </body>
 

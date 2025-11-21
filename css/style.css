@@ -3,16 +3,13 @@
     --bg: #282828;
     --bg-dark: #1d2021;
     --fg: #ebdbb2;
-    --red-p: #fb4934; /* Usado para Detener */
-    --green-p: #b8bb26; /* Usado para Velocidad Activa */
-    --blue-p: #83a598; /* Usado para Controles */
-    --gray-p: #928374; /* Usado para Bordes/Texto Secundario */
-    --orange-p: #fe8019; /* Usado para Hover */
-
-    /* Posicionamiento y Rotación de los 8 Botones */
-    /* Los botones se colocan en el borde del círculo y se rotan para apuntar hacia afuera */
-    --radius: 175px; /* Radio de distancia desde el centro (mitad de 400px menos un margen) */
-    --btn-offset: 50%; /* Para centrar el botón en su posición radial */
+    --red-p: #fb4934;
+    --green-p: #b8bb26;
+    --blue-p: #83a598;
+    --gray-p: #928374;
+    --orange-p: #fe8019;
+    --radius: 175px;
+    --btn-offset: 50%;
 }
 
 /* Estilos Globales y Tipografía */
@@ -29,13 +26,20 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden; /* Evita scroll horizontal en móviles */
+}
+
+/* Reset de enlaces de Bootstrap para que coincida con tu tema */
+a {
+    text-decoration: none;
+    color: var(--blue-p);
+}
+a:hover {
+    color: var(--orange-p);
 }
 
 /* Encabezado (Header) */
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 1rem 2rem;
     background-color: var(--bg-dark);
     border-bottom: 2px solid var(--gray-p);
@@ -61,13 +65,23 @@ header {
     border-bottom: 2px solid var(--blue-p);
 }
 
-/* Contenedor Principal (Main) - Diseño de 3 Columnas */
-.control-layout {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr; /* 25% | 50% | 25% aprox */
-    gap: 2rem;
-    padding: 2rem;
-    flex-grow: 1;
+/* ELIMINADO: .control-layout (Reemplazado por Bootstrap Grid) 
+*/
+
+/* Ajustes para las Secciones dentro de las columnas Bootstrap */
+section {
+    padding: 1.5rem;
+    background-color: var(--bg-dark);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    height: 100%; /* Para que las columnas tengan la misma altura visual */
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    font-size: 1.5rem; /* Ajuste para móviles */
+    color: var(--fg);
 }
 
 h2 {
@@ -76,31 +90,32 @@ h2 {
     text-align: center;
 }
 
-section {
-    padding: 1.5rem;
-    background-color: var(--bg-dark);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-}
-
-/* 1. Control de Velocidad (Speed Control) */
+/* 1. Control de Velocidad */
 .speed-control {
-    display: flex;
-    flex-direction: column;
     align-items: center;
 }
 
 .speed-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.5rem 0;
+    flex-direction: column; /* Mantiene botones verticales */
+    gap: 1rem;
+    width: 100%;
+    align-items: center;
+}
+
+/* En pantallas pequeñas, ponemos los botones en 2 columnas para ahorrar espacio vertical */
+@media (max-width: 991px) {
+    .speed-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
 
 .speed-btn {
     width: 120px;
-    padding: 1rem 0;
-    border-radius: 50px; /* Forma de pastilla */
+    padding: 0.8rem 0;
+    border-radius: 50px;
     font-size: 1rem;
     font-weight: bold;
     color: var(--fg);
@@ -121,36 +136,55 @@ section {
     color: var(--bg-dark);
 }
 
-/* 2. Control Direccional (Directional Control) */
+/* 2. Control Direccional */
 .direction-control {
-    display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* Importante para contener el escalado */
+}
+
+.canvas-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }
 
 .directional-pad-container {
-    position: relative; /* ¡IMPORTANTE! Para posicionar el botón Detener */
+    position: relative;
     width: 400px;
     height: 400px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-shrink: 0; /* Evita que se aplaste */
+}
+
+/* RESPONSIVIDAD CRÍTICA PARA EL CANVAS */
+/* Si la pantalla es menor a 450px, escalamos todo el control (canvas + botón) */
+@media (max-width: 450px) {
+    .directional-pad-container {
+        transform: scale(0.75); /* Reducir al 75% */
+        margin: -50px 0; /* Compensar el espacio vacío dejado por el escalado */
+    }
+}
+@media (max-width: 350px) {
+    .directional-pad-container {
+        transform: scale(0.65); /* Reducir más en pantallas muy pequeñas */
+        margin: -70px 0;
+    }
 }
 
 #controlCanvas {
-    /* Estilos del Canvas */
     border-radius: 50%;
     border: 3px solid var(--gray-p);
-    background-color: var(--bg); /* Fondo del Canvas */
+    background-color: var(--bg);
+    /* Nota: No usamos width/height 100% aquí para no romper la lógica de coordenadas del JS */
 }
 
-/* Ajuste del botón Detener para centrarlo sobre el Canvas */
 .stop-btn {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Centrado perfecto */
+    transform: translate(-50%, -50%);
     width: 120px;
     height: 120px;
     border-radius: 50%;
@@ -162,116 +196,24 @@ section {
     cursor: pointer;
     z-index: 10;
     transition: transform 0.1s;
+    /* Box shadow para darle profundidad sobre el canvas */
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
 }
 
 .stop-btn:active {
     transform: translate(-50%, -50%) scale(0.95);
 }
 
-/* Estilo Base para los 8 botones direccionales */
-.dir-btn {
-    position: absolute;
-    width: 100px;
-    height: 35px;
-    line-height: 35px;
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: var(--fg);
-    background-color: var(--blue-p);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    padding: 0;
-    transition: background-color 0.2s;
-    transform-origin: center; /* Punto de rotación por defecto */
-}
-
-.dir-btn:hover {
-    background-color: var(--orange-p);
-}
-
-.top {
-    top: 0;
-    left: 50%;
-    transform: translate(-var(--btn-offset), calc(-var(--radius) + 35px))
-        rotate(0deg);
-}
-.top-right {
-    top: 50%;
-    left: 50%;
-    transform: translate(
-            calc(125px * cos(315deg)) - var(--btn-offset),
-            calc(125px * sin(315deg)) - var(--btn-offset)
-        )
-        rotate(45deg); /* Ajuste manual para que encaje mejor */
-    /* Posicionamiento más preciso usando funciones trigonométricas con el centro */
-    /* top: calc(50% - ($radius * cos(45deg)) - 17.5px); */
-    /* left: calc(50% + ($radius * sin(45deg)) - 50px); */
-    transform: translate(calc(50% + 125px), calc(50% - 17.5px)) rotate(45deg);
-    top: calc(50% - 130px);
-    left: calc(50% + 100px);
-    transform: rotate(45deg) translate(-50%, -50%);
-    /* Como el posicionamiento circular exacto es complejo en CSS puro,
-       lo haremos más simple usando translate y rotación: */
-    top: 50%;
-    left: 50%;
-    transform: translate(120px, -120px) rotate(45deg);
-}
-
-/* Usaremos posicionamiento simplificado y transformaciones */
-
-.top {
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, -15px); /* Arriba, centrado horizontalmente */
-}
-.top-right {
-    top: 50%;
-    left: 50%;
-    transform: translate(100px, -100px) rotate(45deg);
-}
-.right {
-    top: 50%;
-    right: 0;
-    transform: translate(15px, -50%) rotate(90deg); /* Derecha, centrado verticalmente */
-}
-.bottom-right {
-    top: 50%;
-    left: 50%;
-    transform: translate(100px, 100px) rotate(135deg);
-}
-.bottom {
-    bottom: 0;
-    left: 50%;
-    transform: translate(-50%, 15px); /* Abajo, centrado horizontalmente */
-}
-.bottom-left {
-    top: 50%;
-    left: 50%;
-    transform: translate(-100px, 100px) rotate(225deg);
-}
-.left {
-    top: 50%;
-    left: 0;
-    transform: translate(-15px, -50%) rotate(270deg); /* Izquierda, centrado verticalmente */
-}
-.top-left {
-    top: 50%;
-    left: 50%;
-    transform: translate(-100px, -100px) rotate(315deg);
-}
-
-/* 3. Historial de Movimientos (History Log) */
+/* 3. Historial */
 .history-log {
-    display: flex;
-    flex-direction: column;
+    max-height: 300px; /* Limitar altura en móvil */
     overflow-y: auto;
 }
 
 #movement-history {
     list-style: none;
     padding: 0;
+    width: 100%;
 }
 
 #movement-history li {
@@ -283,7 +225,7 @@ section {
     font-size: 0.9rem;
 }
 
-/* Pie de Página (Footer) */
+/* Footer */
 footer {
     padding: 1rem;
     text-align: center;

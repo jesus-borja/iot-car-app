@@ -160,8 +160,13 @@ h2 {
 }
 
 .label-item {
-    /* cursor: pointer; */ /* Permitir clic en el texto */
+    cursor: pointer;
     transition: color 0.2s, transform 0.2s;
+}
+
+.label-item:hover {
+    color: var(--fg);
+    transform: scale(1.1);
 }
 
 .label-item.reversa {
@@ -186,7 +191,7 @@ h2 {
 .direction-control {
     align-items: center;
     justify-content: center;
-    overflow: hidden; /* Importante para contener el escalado */
+    overflow: hidden;
 }
 
 .canvas-wrapper {
@@ -228,19 +233,14 @@ h2 {
 }
 
 #controlCanvas {
-    /* Le decimos que ocupe la fila 1, columna 1 */
     grid-area: 1 / 1;
-
     border-radius: 50%;
     border: 3px solid var(--gray-p);
     background-color: var(--bg);
-
-    /* CRÍTICO: Elimina el "espacio fantasma" inferior que descuadra el centro */
     display: block;
 }
 
 .stop-btn {
-    /* Le decimos que TAMBIÉN ocupe la fila 1, columna 1 (se pone encima del canvas) */
     grid-area: 1 / 1;
     z-index: 10;
 
@@ -252,24 +252,63 @@ h2 {
     font-weight: bold;
     font-size: 1.1rem;
     border: none;
-    cursor: pointer;
 
     /* Flexbox para centrar el TEXTO dentro del botón */
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0;
-    margin: 0; /* Aseguramos que Bootstrap no meta márgenes extraños */
-
+    margin: 0;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
-
-    /* IMPORTANTE: Quitamos el 'transform: translate' anterior porque Grid ya lo centró */
-    transition: transform 0.1s;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        box-shadow 0.2s;
+}
+.stop-btn:hover {
+    transform: scale(1.1); /* Crece un 10% */
+    /* box-shadow: 0 0 25px rgba(251, 73, 52, 0.6); El resplandor rojo crece */
+    background-color: #fc5b47; /* Un rojo ligeramente más claro */
 }
 
 .stop-btn:active {
-    /* Solo escalamos al presionar, ya no necesitamos trasladar */
     transform: scale(0.95);
+}
+
+/* --- Botones de Giro 360 --- */
+
+.spin-btn {
+    background-color: transparent;
+    border: 2px solid var(--blue-p);
+    color: var(--blue-p);
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px; /* Bordes redondeados estilo pastilla */
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    /* Flex para alinear ícono y texto */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.spin-btn span {
+    font-size: 1.4rem; /* Las flechas un poco más grandes */
+    line-height: 1;
+}
+
+/* Efecto Hover */
+.spin-btn:hover {
+    background-color: var(--blue-p);
+    color: var(--bg-dark);
+    box-shadow: 0 0 10px rgba(131, 165, 152, 0.4); /* Resplandor azul suave */
+    transform: translateY(-2px); /* Pequeña elevación */
+}
+
+/* Efecto Click */
+.spin-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 /* 3. Historial */

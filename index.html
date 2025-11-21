@@ -48,9 +48,19 @@
                     <h2>Movimiento</h2>
                     <div class="canvas-wrapper">
                         <div class="directional-pad-container">
+                            <!-- <canvas id="controlCanvas" width="480" height="480"></canvas> -->
                             <canvas id="controlCanvas" width="400" height="400"></canvas>
                             <button class="stop-btn" data-action="detener">Detener</button>
                         </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4 justify-content-center w-100">
+                        <button class="spin-btn" id="spinLeft" title="Giro 360 Izquierda">
+                            <span>&#8634;</span> 360° Izq
+                        </button>
+                        <button class="spin-btn" id="spinRight" title="Giro 360 Derecha">
+                            360° Der <span>&#8635;</span>
+                        </button>
                     </div>
                 </section>
             </div>

@@ -1,17 +1,25 @@
-// Configuración de la API (simulada)
 const API_BASE_URL = "http://34.237.107.4:5555";
 
 // Definición de las 8 acciones
 const ACTIONS = [
-    { name: "adelante", text: "Adelante" }, // La primera se coloca en la parte superior
-    { name: "vuelta-adelante-derecha", text: "V. Adelante Derecha" },
-    { name: "90-derecha", text: "90° Derecha" },
-    { name: "vuelta-atras-derecha", text: "V. Atrás Derecha" },
+    { name: "adelante", text: "Adelante" },
+    { name: "vuelta_adelante_derecha", text: "V. Adelante Derecha" },
+    { name: "giro_90_derecha", text: "90° Derecha" },
+    { name: "vuelta_atras_derecha", text: "V. Atrás Derecha" },
     { name: "atras", text: "Atrás" },
-    { name: "vuelta-atras-izquierda", text: "V. Atrás Izquierda" },
-    { name: "90-izquierda", text: "90° Izquierda" },
-    { name: "vuelta-adelante-izquierda", text: "V. Adelante Izquierda" },
+    { name: "vuelta_atras_izquierda", text: "V. Atrás Izquierda" },
+    { name: "giro_90_izquierda", text: "90° Izquierda" },
+    { name: "vuelta_adelante_izquierda", text: "V. Adelante Izquierda" },
 ];
+
+// const SOCKET = io(API_BASE_URL);
+let hoveredAction = null;
+
+// SOCKET.onAny((eventName, ...args) => {
+//     console.log("Name: ", eventName);
+//     console.log("args: ", args);
+//     console.log("--------------------");
+// });
 
 // Constantes de cálculo
 const NUM_ACTIONS = ACTIONS.length;
@@ -27,19 +35,16 @@ function drawCanvas(ctx, canvas) {
     const W = canvas.width;
     const H = canvas.height;
     const center = { x: W / 2, y: H / 2 };
-    const innerRadius = 60; // Radio del botón "Detener"
-    const outerRadius = 200; // Radio exterior del Canvas
+    const innerRadius = 60;
+    const outerRadius = 200;
 
-    ctx.clearRect(0, 0, W, H); // Limpiar
+    ctx.clearRect(0, 0, W, H);
 
-    // Dibujar los 8 segmentos
     ACTIONS.forEach((action, index) => {
-        // Cálculo dinámico de los ángulos
         const startAngle =
             index * SEGMENT_ANGLE + (ANGLE_OFFSET - SEGMENT_ANGLE / 2);
         const endAngle =
             (index + 1) * SEGMENT_ANGLE + (ANGLE_OFFSET - SEGMENT_ANGLE / 2);
-
         const startRad = degToRad(startAngle);
         const endRad = degToRad(endAngle);
 
@@ -48,51 +53,53 @@ function drawCanvas(ctx, canvas) {
         ctx.arc(center.x, center.y, outerRadius, startRad, endRad);
         ctx.closePath();
 
-        // Estilo de Relleno (Gruvbox Dark)
-        ctx.fillStyle = index % 2 === 0 ? "#3c3836" : "#504945"; // Tonos de gris/marrón
+        // --- LÓGICA DE COLOR (HOVER) ---
+        if (action.name === hoveredAction) {
+            // Si el mouse está encima, usamos el Naranja Gruvbox
+            ctx.fillStyle = "#fe8019";
+        } else {
+            // Colores normales alternados
+            ctx.fillStyle = index % 2 === 0 ? "#3c3836" : "#504945";
+        }
+
         ctx.fill();
 
-        // Línea de separación (mismo color del fondo oscuro para simular separación)
+        // Línea de separación
         ctx.strokeStyle = "#282828";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // ------------------
-        // Dibujar el texto de la acción
-        // ------------------
-        ctx.fillStyle = "#ebdbb2"; // Color del texto (Gruvbox fg)
+        // --- TEXTO ---
+        // Si está en hover, el texto cambia a oscuro para contraste, si no, claro
+        ctx.fillStyle = action.name === hoveredAction ? "#282828" : "#ebdbb2";
+
         ctx.font = "bold 12px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        // Calcular el ángulo medio
         const midAngleDeg = startAngle + SEGMENT_ANGLE / 2;
         const midAngleRad = degToRad(midAngleDeg);
-
-        const textRadius = innerRadius + (outerRadius - innerRadius) * 0.7; // Posicionar más afuera
+        const textRadius = innerRadius + (outerRadius - innerRadius) * 0.7;
 
         const textX = center.x + textRadius * Math.cos(midAngleRad);
         const textY = center.y + textRadius * Math.sin(midAngleRad);
 
-        // Rotación del texto
         ctx.save();
         ctx.translate(textX, textY);
-        // La rotación se aplica para que el texto siga la línea radial. Sumamos 90 grados para orientarlo.
         ctx.rotate(midAngleRad + degToRad(90));
 
         const lines = action.text.split(" ");
         lines.forEach((line, i) => {
-            // Ajuste de posición vertical para múltiples líneas
             ctx.fillText(line, 0, i * 14 - (lines.length - 1) * 7);
         });
 
         ctx.restore();
     });
 
-    // Dibujar el borde circular interior (separación con Detener)
+    // Borde interior (círculo central)
     ctx.beginPath();
     ctx.arc(center.x, center.y, innerRadius, 0, degToRad(360));
-    ctx.strokeStyle = "#928374"; // Gruvbox gray-p
+    ctx.strokeStyle = "#928374";
     ctx.lineWidth = 3;
     ctx.stroke();
 }
@@ -218,7 +225,7 @@ async function registerMovement(action, speed) {
 
     try {
         // --- SIMULACIÓN DE PETICIÓN API ---
-        const response = await fetch(`${API_BASE_URL}/movement`, {
+        const response = await fetch(`${API_BASE_URL}/api/operation/last10/1`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -365,12 +372,56 @@ function initializeApp() {
         }
     });
 
+    canvas.addEventListener("mousemove", (event) => {
+        const rect = canvas.getBoundingClientRect();
+
+        // Calcular escala por si el CSS redimensionó el canvas en móviles
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+
+        // Detectar sobre qué acción estamos
+        const newHoveredAction = getClickedAction(x, y, canvas);
+
+        // Cambiar el cursor: 'pointer' si hay acción, 'default' si está en el centro o fuera
+        canvas.style.cursor = newHoveredAction ? "pointer" : "default";
+
+        // Solo redibujar si cambiamos de sección (optimización de rendimiento)
+        if (newHoveredAction !== hoveredAction) {
+            hoveredAction = newHoveredAction;
+            drawCanvas(ctx, canvas);
+        }
+    });
+
+    // Cuando el mouse sale del canvas, limpiamos el hover
+    canvas.addEventListener("mouseleave", () => {
+        if (hoveredAction !== null) {
+            hoveredAction = null;
+            drawCanvas(ctx, canvas);
+        }
+    });
+
     // 4. Dibujar el Canvas inicialmente y manejar redimensionamiento
     drawCanvas(ctx, canvas);
     window.addEventListener("resize", () => drawCanvas(ctx, canvas));
 
     // 5. Carga Inicial del Historial
     loadMovementHistory();
+
+    // 6. Configuración de Botones 360
+    const btnSpinLeft = document.getElementById("spinLeft");
+    const btnSpinRight = document.getElementById("spinRight");
+
+    btnSpinLeft.addEventListener("click", () => {
+        // Enviamos la acción y la velocidad actual definida por la palanca/slider
+        registerMovement("360-izquierda", currentSpeed);
+    });
+
+    btnSpinRight.addEventListener("click", () => {
+        registerMovement("360-derecha", currentSpeed);
+    });
 }
 
 // Ejecutar la función de inicialización

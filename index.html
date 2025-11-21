@@ -25,22 +25,19 @@
 
             <section class="col-12 col-lg-3 order-2 order-lg-1 speed-control">
                 <h2>Velocidad</h2>
-                <div class="speed-buttons">
-                    <button class="speed-btn" data-speed="rapido">Rápido</button>
-                    <button class="speed-btn active" data-speed="normal">Normal</button>
-                    <button class="speed-btn" data-speed="lento">Lento</button>
-                    <button class="speed-btn" data-speed="reversa">Reversa</button>
-                </div>
-            </section>
 
-            <section class="col-12 col-lg-3 order-2 order-lg-1 speed-control">
-                <h2>Demos</h2>
-                <div class="speed-buttons">
-                    <select name="demo-selection" id="demo-selection">Selecciona una demo
-                        <option value="demo1">Demo1</option>
-                        <option value="demo2">Demo2</option>
-                        <option value="demo3">Demo3</option>
-                    </select>
+                <div class="speed-input-container">
+
+                    <div class="slider-wrapper">
+                        <input type="range" id="speedInput" min="0" max="3" step="1" value="2">
+                    </div>
+
+                    <div class="speed-labels">
+                        <span class="label-item" data-val="3">Rápido</span>
+                        <span class="label-item" data-val="2">Normal</span>
+                        <span class="label-item" data-val="1">Lento</span>
+                        <span class="label-item reversa" data-val="0">Reversa</span>
+                    </div>
                 </div>
             </section>
 

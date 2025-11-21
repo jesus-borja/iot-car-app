@@ -292,25 +292,60 @@ async function loadMovementHistory() {
  * 💡 Inicializa los eventos y la carga de datos al cargar la página.
  */
 function initializeApp() {
-    const speedButtons = document.querySelectorAll(".speed-btn");
     const stopButton = document.querySelector(".stop-btn");
     const canvas = document.getElementById("controlCanvas");
     const ctx = canvas.getContext("2d");
 
-    let currentSpeed = "normal";
+    // 1. Configuración de la Palanca de Velocidades
+    const inputSpeed = document.getElementById("speedInput");
+    const labels = document.querySelectorAll(".label-item");
 
-    // 1. Configuración de Velocidad
-    speedButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            speedButtons.forEach((btn) => btn.classList.remove("active"));
-            button.classList.add("active");
-            currentSpeed = button.dataset.speed;
-        });
+    // Mapeo de valores numéricos a acciones de la API
+    const SPEED_MAP = {
+        3: { id: "rapido" },
+        2: { id: "normal" },
+        1: { id: "lento" },
+        0: { id: "reversa" },
+    };
 
-        if (button.classList.contains("active")) {
-            currentSpeed = button.dataset.speed;
+    let currentSpeed = "normal"; // Valor inicial por defecto (valor 2)
+
+    function updateSpeedInput() {
+        const val = parseInt(inputSpeed.value);
+        const setting = SPEED_MAP[val];
+
+        // 1. Actualizar variable global para la API
+        currentSpeed = setting.id;
+
+        // 2. Actualizar color de la palanca (Thumb) si es reversa
+        if (val === 0) {
+            inputSpeed.classList.add("reversa-active");
+        } else {
+            inputSpeed.classList.remove("reversa-active");
         }
+
+        // 3. Destacar la etiqueta correspondiente a la derecha
+        labels.forEach((lbl) => {
+            lbl.classList.remove("active");
+            if (parseInt(lbl.dataset.val) === val) {
+                lbl.classList.add("active");
+            }
+        });
+    }
+
+    // Evento: Al mover el slider
+    inputSpeed.addEventListener("input", updateSpeedInput);
+
+    // Evento: Clic en las etiquetas de texto para mover la palanca
+    labels.forEach((label) => {
+        label.addEventListener("click", () => {
+            inputSpeed.value = label.dataset.val;
+            updateSpeedInput();
+        });
     });
+
+    // Inicializar visualmente
+    updateSpeedInput();
 
     // 2. Configuración del Botón DETENER
     stopButton.addEventListener("click", () => {

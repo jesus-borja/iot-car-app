@@ -65,9 +65,6 @@ header {
     border-bottom: 2px solid var(--blue-p);
 }
 
-/* ELIMINADO: .control-layout (Reemplazado por Bootstrap Grid) 
-*/
-
 /* Ajustes para las Secciones dentro de las columnas Bootstrap */
 section {
     padding: 1.5rem;
@@ -90,50 +87,99 @@ h2 {
     text-align: center;
 }
 
+/* --- Estilos para las velocidades --- */
+
+.speed-input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 10px;
+    background-color: var(--bg); /* Fondo oscuro interior */
+    border-radius: 15px;
+    border: 2px solid var(--gray-p);
+    height: 250px; /* Altura fija para alinear todo */
+}
+
+/* 1. Wrapper y Slider Vertical */
+.slider-wrapper {
+    height: 200px;
+    display: flex;
+    align-items: center;
+}
+
+#speedInput {
+    writing-mode: vertical-lr;
+    direction: rtl;
+    appearance: slider-vertical;
+    width: 16px;
+    vertical-align: bottom;
+    width: 40px; /* Ancho del canal */
+    height: 100%;
+    outline: none;
+    cursor: pointer;
+    background: transparent; /* Quitamos fondo por defecto */
+}
+
+/* Estilización del 'Track' (el riel) y 'Thumb' (la palanca)
+   Nota: slider-vertical tiene soporte limitado de estilos en CSS puro estándar,
+   pero esto funciona en Chrome/Edge/Safari/Firefox modernos */
+
+#speedInput::-webkit-slider-runnable-track {
+    background: #3c3836;
+    border-radius: 10px;
+    border: 1px solid var(--gray-p);
+}
+
+#speedInput::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 36px; /* Casi el ancho del track */
+    height: 30px; /* Altura del pomo */
+    background: var(--blue-p);
+    border: 2px solid var(--fg);
+    border-radius: 4px; /* Cuadrado redondeado tipo palanca */
+    margin-left: -8px; /* Ajuste fino si se descentra */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* Cambio de color cuando está en Reversa (valor 0, abajo) */
+#speedInput.reversa-active::-webkit-slider-thumb {
+    background-color: var(--red-p);
+}
+
+/* 2. Etiquetas Laterales */
+.speed-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Distribuye equitativamente */
+    height: 200px; /* Misma altura que el slider para alinear */
+    font-weight: bold;
+    color: var(--gray-p);
+    font-size: 0.9rem;
+}
+
+.label-item {
+    /* cursor: pointer; */ /* Permitir clic en el texto */
+    transition: color 0.2s, transform 0.2s;
+}
+
+.label-item.reversa {
+    color: var(--red-p); /* Reversa siempre rojiza */
+}
+
+/* Clase activa para la etiqueta seleccionada */
+.label-item.active {
+    color: var(--fg);
+    transform: scale(1.1);
+}
+.label-item.reversa.active {
+    color: var(--red-p);
+}
+
 /* 1. Control de Velocidad */
 .speed-control {
     align-items: center;
-}
-
-.speed-buttons {
-    display: flex;
-    flex-direction: column; /* Mantiene botones verticales */
-    gap: 1rem;
-    width: 100%;
-    align-items: center;
-}
-
-/* En pantallas pequeñas, ponemos los botones en 2 columnas para ahorrar espacio vertical */
-@media (max-width: 991px) {
-    .speed-buttons {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-}
-
-.speed-btn {
-    width: 120px;
-    padding: 0.8rem 0;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: bold;
-    color: var(--fg);
-    background-color: var(--gray-p);
-    border: 3px solid var(--gray-p);
-    cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
-}
-
-.speed-btn:hover {
-    background-color: var(--orange-p);
-    border-color: var(--orange-p);
-}
-
-.speed-btn.active {
-    background-color: var(--green-p);
-    border-color: var(--green-p);
-    color: var(--bg-dark);
 }
 
 /* 2. Control Direccional */

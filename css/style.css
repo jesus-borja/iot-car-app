@@ -156,7 +156,7 @@ h2 {
     height: 200px; /* Misma altura que el slider para alinear */
     font-weight: bold;
     color: var(--gray-p);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .label-item {
@@ -198,10 +198,15 @@ h2 {
 }
 
 .directional-pad-container {
+    /* Usamos Grid para superponer los elementos perfectamente en el centro */
+    display: grid;
+    place-items: center;
+
+    /* Eliminamos el tamaño fijo para que el contenedor se adapte al tamaño real del Canvas */
+    width: fit-content;
+    height: auto;
+    margin: 0 auto;
     position: relative;
-    width: 400px;
-    height: 400px;
-    flex-shrink: 0; /* Evita que se aplaste */
 }
 
 /* RESPONSIVIDAD CRÍTICA PARA EL CANVAS */
@@ -210,6 +215,9 @@ h2 {
     .directional-pad-container {
         transform: scale(0.75); /* Reducir al 75% */
         margin: -50px 0; /* Compensar el espacio vacío dejado por el escalado */
+    }
+    .history-log {
+        max-height: 300px; /* Limitar altura en móvil */
     }
 }
 @media (max-width: 350px) {
@@ -220,17 +228,22 @@ h2 {
 }
 
 #controlCanvas {
+    /* Le decimos que ocupe la fila 1, columna 1 */
+    grid-area: 1 / 1;
+
     border-radius: 50%;
     border: 3px solid var(--gray-p);
     background-color: var(--bg);
-    /* Nota: No usamos width/height 100% aquí para no romper la lógica de coordenadas del JS */
+
+    /* CRÍTICO: Elimina el "espacio fantasma" inferior que descuadra el centro */
+    display: block;
 }
 
 .stop-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    /* Le decimos que TAMBIÉN ocupe la fila 1, columna 1 (se pone encima del canvas) */
+    grid-area: 1 / 1;
+    z-index: 10;
+
     width: 120px;
     height: 120px;
     border-radius: 50%;
@@ -240,19 +253,27 @@ h2 {
     font-size: 1.1rem;
     border: none;
     cursor: pointer;
-    z-index: 10;
+
+    /* Flexbox para centrar el TEXTO dentro del botón */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0; /* Aseguramos que Bootstrap no meta márgenes extraños */
+
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+
+    /* IMPORTANTE: Quitamos el 'transform: translate' anterior porque Grid ya lo centró */
     transition: transform 0.1s;
-    /* Box shadow para darle profundidad sobre el canvas */
-    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); */
 }
 
 .stop-btn:active {
-    transform: translate(-50%, -50%) scale(0.95);
+    /* Solo escalamos al presionar, ya no necesitamos trasladar */
+    transform: scale(0.95);
 }
 
 /* 3. Historial */
 .history-log {
-    max-height: 300px; /* Limitar altura en móvil */
     overflow-y: auto;
 }
 

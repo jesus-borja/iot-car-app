@@ -20,43 +20,49 @@
         </nav>
     </header>
 
-    <main class="container-fluid py-4">
-        <div class="row g-4 justify-content-center align-items-start">
+    <main class="container-fluid p-4 flex-grow-1 d-flex flex-column">
+        <div class="row g-4 h-100">
 
-            <section class="col-12 col-lg-3 order-2 order-lg-1 speed-control">
-                <h2>Velocidad</h2>
+            <div class="col-12 col-lg-3">
+                <section class="speed-control h-100">
+                    <h2>Velocidad</h2>
 
-                <div class="speed-input-container">
+                    <div class="speed-input-container flex-grow-1">
 
-                    <div class="slider-wrapper">
-                        <input type="range" id="speedInput" min="0" max="3" step="1" value="2">
+                        <div class="slider-wrapper">
+                            <input type="range" id="speedInput" min="0" max="3" step="1" value="2">
+                        </div>
+
+                        <div class="speed-labels">
+                            <span class="label-item" data-val="3">Rápido</span>
+                            <span class="label-item" data-val="2">Normal</span>
+                            <span class="label-item" data-val="1">Lento</span>
+                            <span class="label-item reversa" data-val="0">Reversa</span>
+                        </div>
                     </div>
+                </section>
+            </div>
 
-                    <div class="speed-labels">
-                        <span class="label-item" data-val="3">Rápido</span>
-                        <span class="label-item" data-val="2">Normal</span>
-                        <span class="label-item" data-val="1">Lento</span>
-                        <span class="label-item reversa" data-val="0">Reversa</span>
+            <div class="col-12 col-lg-6">
+                <section class="direction-control h-100 justify-content-center">
+                    <h2>Movimiento</h2>
+                    <div class="canvas-wrapper">
+                        <div class="directional-pad-container">
+                            <canvas id="controlCanvas" width="400" height="400"></canvas>
+                            <button class="stop-btn" data-action="detener">Detener</button>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            </div>
 
-            <section class="col-12 col-lg-6 order-1 order-lg-2 direction-control">
-                <h2>Movimiento</h2>
-                <div class="canvas-wrapper">
-                    <div class="directional-pad-container">
-                        <canvas id="controlCanvas" width="400" height="400"></canvas>
-                        <button class="stop-btn" data-action="detener">Detener</button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="col-12 col-lg-3 order-3 order-lg-3 history-log">
-                <h2>Últimos Movimientos</h2>
-                <ul id="movement-history">
-                    <li>Inicializando...</li>
-                </ul>
-            </section>
+            <div class="col-12 col-lg-3">
+                <section class="history-log h-100">
+                    <h2>Últimos Movimientos</h2>
+                    <ul id="movement-history" class="h-100">
+                        <li>Inicializando...</li>
+                    </ul>
+                </section>
+            </div>
         </div>
     </main>
 

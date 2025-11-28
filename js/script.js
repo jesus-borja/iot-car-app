@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://34.237.107.4:5555";
+const API_BASE_URL = "http://3.226.80.130:5555";
 
 // Definición de las 8 acciones
 const ACTIONS = [

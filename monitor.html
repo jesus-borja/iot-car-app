@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito IoT - Monitoreo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body data-theme="dark">
+    <header class="d-flex justify-content-between align-items-center">
+        <div class="header-left">
+            <h1 class="m-0">Carrito IoT</h1>
+        </div>
+        <nav class="header-right">
+            <a href="index.html" class="nav-button">Control</a>
+            <button class="nav-button active">Monitoreo</button>
+        </nav>
+    </header>
+
+    <main class="container-fluid p-4 flex-grow-1 d-flex flex-column">
+
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-md-6">
+                <section class="status-section d-flex align-items-center justify-content-between">
+                    <div>
+                        <h2 class="text-start mb-1">Estado Actual</h2>
+                        <p class=" mb-0">Última acción recibida</p>
+                    </div>
+                    <div class="status-display text-end" id="live-movement">
+                        <div class="status-icon">Waiting...</div>
+                        <div class="status-text">---</div>
+                        <div class="status-meta">---</div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <section class="status-section d-flex align-items-center justify-content-between" id="obstacle-card">
+                    <div>
+                        <h2 class="text-start mb-1" style="color: var(--red-p);">Sensores</h2>
+                        <p class=" mb-0">Último obstáculo detectado</p>
+                    </div>
+                    <div class="status-display text-end" id="live-obstacle">
+                        <div class="status-icon">🛡</div>
+                        <div class="status-text">Despejado</div>
+                        <div class="status-meta">Sin reportes recientes</div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="row g-4 flex-grow-1">
+
+            <div class="col-12 col-lg-4">
+                <section class="history-log h-100">
+                    <h2>Historial Movimientos (10)</h2>
+                    <ul id="move-history-list" class="dashboard-list">
+                        <li class="text-center ">Cargando...</li>
+                    </ul>
+                </section>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <section class="history-log h-100">
+                    <h2 style="color: var(--red-p);">Log Obstáculos (10)</h2>
+                    <ul id="obs-history-list" class="dashboard-list">
+                        <li class="text-center ">Sin registros</li>
+                    </ul>
+                </section>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <section class="history-log h-100">
+                    <h2 style="color: var(--orange-p);">Secuencias DEMO (20)</h2>
+                    <ul id="demo-history-list" class="dashboard-list">
+                        <li class="text-center ">Cargando...</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-auto">
+        <p>&copy; 2025 | Dashboard de Monitoreo</p>
+    </footer>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script defer src="js/monitor.js"></script>
+</body>
+
+</html>

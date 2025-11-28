@@ -345,3 +345,117 @@ footer a {
     color: var(--blue-p);
     text-decoration: none;
 }
+
+/* ----- Monitor -------- */
+
+/* =========================================
+   ESTILOS EXTRA PARA DASHBOARD DE MONITOREO
+   ========================================= */
+
+/* Contenedor de la tarjeta superior */
+.status-section {
+    min-height: 140px; /* Altura mínima en lugar de fija */
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem; /* Espacio vital entre texto e ícono */
+    overflow: hidden; /* Evita que salga del borde */
+    color: var(--fg);
+}
+/* Parte izquierda (Títulos) */
+.status-section > div:first-child {
+    flex: 1; /* Ocupa el espacio disponible */
+    min-width: 0; /* Permite al texto cortarse si es necesario */
+}
+
+/* Parte derecha (Icono y estado) */
+.status-display {
+    flex-shrink: 0; /* Prohibido encogerse */
+    text-align: right;
+    min-width: 120px; /* Ancho mínimo garantizado */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.status-display .status-icon {
+    font-size: 3.5rem; /* Un poco más grande */
+    margin-bottom: 5px;
+}
+
+.status-display .status-text {
+    white-space: nowrap; /* No partir el texto en dos líneas */
+    font-size: 1.1rem;
+}
+
+.status-display .status-meta {
+    font-size: 0.8rem;
+    color: var(--gray-p);
+}
+
+/* Estilos específicos para listas del dashboard */
+.dashboard-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.dashboard-list li {
+    background-color: var(--bg);
+    padding: 0.6rem;
+    margin-bottom: 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid var(--gray-p); /* Borde default */
+}
+
+/* Variaciones de color por tipo de lista */
+#move-history-list li {
+    border-left-color: var(--blue-p);
+}
+#obs-history-list li {
+    border-left-color: var(--red-p);
+}
+#demo-history-list li {
+    border-left-color: var(--orange-p);
+}
+
+/* Animación de alerta para tarjeta de obstáculos */
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(251, 73, 52, 0.4);
+        border-color: var(--red-p);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(251, 73, 52, 0);
+        border-color: var(--red-p);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(251, 73, 52, 0);
+        border-color: var(--gray-p);
+    }
+}
+
+.obstacle-alert {
+    animation: pulse-red 2s infinite;
+    background-color: #3c1f1e; /* Un fondo rojizo muy oscuro */
+}
+
+/* Ajuste Responsive para móviles */
+@media (max-width: 576px) {
+    .status-section {
+        flex-direction: row; /* Mantener fila */
+        padding: 1rem;
+    }
+    .status-display .status-icon {
+        font-size: 2.5rem;
+    }
+    .status-display .status-text {
+        font-size: 0.9rem;
+    }
+}

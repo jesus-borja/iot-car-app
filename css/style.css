@@ -8,8 +8,6 @@
     --blue-p: #83a598;
     --gray-p: #928374;
     --orange-p: #fe8019;
-    --radius: 175px;
-    --btn-offset: 50%;
 }
 
 /* Estilos Globales y Tipografía */
@@ -154,9 +152,9 @@ h2 {
     flex-direction: column;
     justify-content: space-between; /* Distribuye equitativamente */
     height: 200px; /* Misma altura que el slider para alinear */
+    font-size: 1rem;
     font-weight: bold;
     color: var(--gray-p);
-    font-size: 1rem;
 }
 
 .label-item {

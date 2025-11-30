@@ -1,25 +1,44 @@
 const API_BASE_URL = "http://3.226.80.130:5555";
 
 // Definición de las 8 acciones
+// op_id: 3 -> detener
+// op_id: 10 -> 360 derecha
+// op_id: 11 -> 360 izquierda
 const ACTIONS = [
-    { name: "adelante", text: "Adelante" },
-    { name: "vuelta_adelante_derecha", text: "V. Adelante Derecha" },
-    { name: "giro_90_derecha", text: "90° Derecha" },
-    { name: "vuelta_atras_derecha", text: "V. Atrás Derecha" },
-    { name: "atras", text: "Atrás" },
-    { name: "vuelta_atras_izquierda", text: "V. Atrás Izquierda" },
-    { name: "giro_90_izquierda", text: "90° Izquierda" },
-    { name: "vuelta_adelante_izquierda", text: "V. Adelante Izquierda" },
+    { op_id: 1, name: "adelante", text: "Adelante" },
+    { op_id: 4, name: "vuelta_adelante_derecha", text: "V. Adelante Derecha" },
+    { op_id: 8, name: "giro_90_derecha", text: "90° Derecha" },
+    { op_id: 6, name: "vuelta_atras_derecha", text: "V. Atrás Derecha" },
+    { op_id: 2, name: "atras", text: "Atrás" },
+    { op_id: 7, name: "vuelta_atras_izquierda", text: "V. Atrás Izquierda" },
+    { op_id: 9, name: "giro_90_izquierda", text: "90° Izquierda" },
+    {
+        op_id: 5,
+        name: "vuelta_adelante_izquierda",
+        text: "V. Adelante Izquierda",
+    },
 ];
 
-// const SOCKET = io(API_BASE_URL);
-let hoveredAction = null;
+// ID del dispositivo por defecto
+let device_id = 1;
 
-// SOCKET.onAny((eventName, ...args) => {
-//     console.log("Name: ", eventName);
-//     console.log("args: ", args);
-//     console.log("--------------------");
-// });
+let hoveredAction = null;
+let userData = null;
+
+const client_info = {
+    ip: "0.0.0.0",
+    country: "WebClient",
+    city: "Browser",
+    lat: 0,
+    long: 0,
+};
+
+const SPEED_MAP = {
+    3: { name: "rapido", id: 1 },
+    2: { name: "normal", id: 2 },
+    1: { name: "lento", id: 3 },
+    0: { name: "reversa", id: 4 },
+};
 
 // Constantes de cálculo
 const NUM_ACTIONS = ACTIONS.length;
@@ -146,73 +165,10 @@ function getClickedAction(x, y, canvas) {
     const index = Math.floor(adjustedForIndex / SEGMENT_ANGLE);
 
     // El índice 8 (si ocurre por un clic en el límite) se ajusta a 0.
-    return ACTIONS[index % NUM_ACTIONS].name;
+    return ACTIONS[index % NUM_ACTIONS];
 }
 
 // --- Lógica de la API y Inicialización ---
-
-/**
- * 💡 Simulación de la función para hacer una petición POST a la API
- * y registrar un movimiento. (Se mantiene la misma lógica)
- */
-async function registerMovement(action, speed) {
-    console.log(`📡 Enviando acción: ${action} a velocidad: ${speed}...`);
-    // ... (Lógica de fetch simulada) ...
-
-    try {
-        // SIMULACIÓN DE REGISTRO
-        await new Promise((resolve) => setTimeout(resolve, 100)); // Simula latencia de red
-
-        console.log("✅ Registro exitoso:", { action, speed });
-        await loadMovementHistory(action, speed); // Actualizar historial con el nuevo dato simulado
-    } catch (error) {
-        console.error("❌ Fallo al registrar movimiento:", error);
-        alert(
-            `Fallo al conectar con la API para la acción "${action}". Revisa la consola.`
-        );
-    }
-}
-
-/**
- * 💡 Simulación de la función para obtener el historial de movimientos de la API.
- */
-async function loadMovementHistory(newAction = null, newSpeed = null) {
-    const historyList = document.getElementById("movement-history");
-
-    // Datos simulados (Se mantienen en la sesión de la consola para la demo)
-    if (!window.simulatedHistory) {
-        window.simulatedHistory = [
-            { action: "detener", speed: "normal", time: "hace 5s" },
-            { action: "adelante", speed: "normal", time: "hace 10s" },
-        ];
-    }
-
-    if (newAction) {
-        // Añadir el nuevo movimiento al principio del historial simulado
-        window.simulatedHistory.unshift({
-            action: newAction,
-            speed: newSpeed,
-            time: "justo ahora",
-        });
-        // Limitar a 5 movimientos para que no crezca demasiado
-        window.simulatedHistory = window.simulatedHistory.slice(0, 5);
-    }
-
-    historyList.innerHTML = ""; // Limpiar lista
-
-    window.simulatedHistory.forEach((item) => {
-        const li = document.createElement("li");
-        const timePart =
-            item.time === "justo ahora" ? `**${item.time}**` : item.time;
-        li.innerHTML = `[${timePart}] Acción: **${item.action
-            .toUpperCase()
-            .replace(
-                /-/g,
-                " "
-            )}** | Velocidad: **${item.speed.toUpperCase()}**`;
-        historyList.appendChild(li);
-    });
-}
 
 /**
  * 💡 Simulación de la función para hacer una petición POST a la API
@@ -225,15 +181,16 @@ async function registerMovement(action, speed) {
 
     try {
         // --- SIMULACIÓN DE PETICIÓN API ---
-        const response = await fetch(`${API_BASE_URL}/api/operation/last10/1`, {
+        const response = await fetch(`${API_BASE_URL}/api/movement`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                action: action,
-                speed: speed,
-                timestamp: new Date().toISOString(),
+                device_id: device_id,
+                op_id: action,
+                speed_id: speed,
+                client_info: client_info,
             }),
             // En un caso real, la respuesta de un POST indicaría éxito o el nuevo registro.
         });
@@ -295,6 +252,23 @@ async function loadMovementHistory() {
     }
 }
 
+async function getUserData() {
+    let response = await fetch("http://ip-api.com/json");
+    if (!response.ok) {
+        console.error(
+            `No se pudieron cargar los datos del usuario: ${response.status}. Usando datos por defecto.`
+        );
+    }
+
+    const data = await response.json();
+
+    client_info.ip = data.query;
+    client_info.country = data.country;
+    client_info.city = data.city;
+    client_info.lat = data.lat;
+    client_info.long = data.lon;
+}
+
 /**
  * 💡 Inicializa los eventos y la carga de datos al cargar la página.
  */
@@ -303,17 +277,11 @@ function initializeApp() {
     const canvas = document.getElementById("controlCanvas");
     const ctx = canvas.getContext("2d");
 
-    // 1. Configuración de la Palanca de Velocidades
+    getUserData();
+
+    // 1. Configuración de Velocidades
     const inputSpeed = document.getElementById("speedInput");
     const labels = document.querySelectorAll(".label-item");
-
-    // Mapeo de valores numéricos a acciones de la API
-    const SPEED_MAP = {
-        3: { id: "rapido" },
-        2: { id: "normal" },
-        1: { id: "lento" },
-        0: { id: "reversa" },
-    };
 
     let currentSpeed = "normal"; // Valor inicial por defecto (valor 2)
 
@@ -356,7 +324,8 @@ function initializeApp() {
 
     // 2. Configuración del Botón DETENER
     stopButton.addEventListener("click", () => {
-        registerMovement("detener", currentSpeed);
+        // op_id: 3 -> detener
+        registerMovement(3, currentSpeed);
     });
 
     // 3. Manejo de Clics en el CANVAS
@@ -368,7 +337,7 @@ function initializeApp() {
         const action = getClickedAction(x, y, canvas);
 
         if (action) {
-            registerMovement(action, currentSpeed);
+            registerMovement(action.op_id, currentSpeed);
         }
     });
 
@@ -383,7 +352,7 @@ function initializeApp() {
         const y = (event.clientY - rect.top) * scaleY;
 
         // Detectar sobre qué acción estamos
-        const newHoveredAction = getClickedAction(x, y, canvas);
+        const newHoveredAction = getClickedAction(x, y, canvas).name;
 
         // Cambiar el cursor: 'pointer' si hay acción, 'default' si está en el centro o fuera
         canvas.style.cursor = newHoveredAction ? "pointer" : "default";
@@ -416,11 +385,13 @@ function initializeApp() {
 
     btnSpinLeft.addEventListener("click", () => {
         // Enviamos la acción y la velocidad actual definida por la palanca/slider
-        registerMovement("360-izquierda", currentSpeed);
+        // op_id: 11 -> 360 izquierda
+        registerMovement(11, currentSpeed);
     });
 
     btnSpinRight.addEventListener("click", () => {
-        registerMovement("360-derecha", currentSpeed);
+        // op_id: 10 -> 360 izquierda
+        registerMovement(10, currentSpeed);
     });
 }
 

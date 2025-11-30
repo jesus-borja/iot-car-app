@@ -364,12 +364,36 @@ async function addStepToDemo() {
     await loadSteps(select.id);
 }
 
+async function executeDemo() {
+    const demosList = document.getElementById("demos-select");
+    const response = await fetch(`${API_BASE_URL}/api/demos/play`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            demo_id: demosList.value,
+            device_id: device_id,
+            client_ip: client_info.ip,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error al ejecutar demo. ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Demo ejecutada correctamente!");
+    await loadMovementHistory();
+}
+
 /**
  * Inicializa los eventos y la carga de datos al cargar la página.
  */
 function initializeApp() {
     const stopButton = document.querySelector(".stop-btn");
     const devicesList = document.getElementById("devices-select");
+    const playDemoBtn = document.getElementById("play-demo");
     const addStepBtn = document.getElementById("add-step-to-demo");
     const canvas = document.getElementById("controlCanvas");
     const ctx = canvas.getContext("2d");
@@ -495,6 +519,10 @@ function initializeApp() {
     });
 
     devicesList.addEventListener("change", updateSelectedDevice);
+
+    playDemoBtn.addEventListener("click", () => {
+        executeDemo();
+    });
 
     addStepBtn.addEventListener("click", () => {
         addStepToDemo();

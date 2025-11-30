@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body data-theme="dark">
+<body data-theme="dark" data-bs-theme="dark">
     <header class="d-flex justify-content-between align-items-center">
         <div class="header-left">
             <h1 class="m-0">Carrito IoT</h1>
@@ -42,10 +42,12 @@
                         </div>
                     </div>
 
-                    <h2 class="mt-4">Demos</h2>
-                    <div class="demos-container">
+                    <div class="demos-container d-flex flex-column gap-3 mt-4 justify-content-between">
+                        <h2>Demos</h2>
                         <select class="devices-select" name="demos-select" id="demos-select"></select>
                         <button class="spin-btn mt-4">Ejecutar demo</button>
+                        <button class="spin-btn mt-4" data-bs-toggle="modal" data-bs-target="#add-demo">Agregar
+                            demo</button>
                     </div>
                 </section>
             </div>
@@ -86,6 +88,33 @@
             </div>
         </div>
     </main>
+
+    <div class="modal fade" id="add-demo" tabindex="-1" aria-labelledby="addDemoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addDemoLabel">Agregar demo</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Selecciona los pasos para crear la demo</p>
+
+                    <div class="steps-container d-flex gap-3 flex-column mt-4 justify-content-center w-100"
+                        id="steps-container">
+                        <div class="steps-wrapper d-flex gap-3 justify-content-center w-100" id="steps-wrapper">
+                            <select class="steps-select devices-select" name="steps-select" id="steps-select"></select>
+                            <button disabled type="button" class="btn btn-secondary" id="step-remove">Borrar</button>
+                        </div>
+                    </div>
+                    <button class="spin-btn mt-3" id="add-step-to-demo">Agregar paso</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button id="add-demo-btn" class="spin-btn">Guardar demo</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer class="mt-auto">
         <p>&copy; 2025 | Hecho por <a href="#" target="_blank">Persona</a></p>

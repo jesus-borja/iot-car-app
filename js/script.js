@@ -310,18 +310,74 @@ async function loadDemos() {
     });
 }
 
+async function loadSteps(id) {
+    const stepstList = document.getElementById(id);
+    const response = await fetch(`${API_BASE_URL}/api/demos/steps`);
+
+    if (!response.ok) {
+        throw new Error(`Error cargando los pasos. ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    data.forEach((step) => {
+        const option = document.createElement("option");
+        option.value = step.op_id;
+        option.text = step.description;
+        option.selected = option.value == 3;
+
+        stepstList.appendChild(option);
+    });
+}
+
+async function addStepToDemo() {
+    const container = document.getElementById("steps-container");
+    const id = container.childElementCount + 1;
+    const div = document.createElement("div");
+    div.classList.add(
+        "steps-wrapper",
+        "d-flex",
+        "gap-3",
+        "justify-content-center",
+        "w-100"
+    );
+    div.id = `steps-wrapper-${id}`;
+    const select = document.createElement("select");
+    select.classList.add("steps-select", "devices-select");
+    select.name = "steps-select";
+    select.id = `steps-select-${id}`;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.innerText = "Borrar";
+    btn.id = `step-remove-${id}`;
+    btn.setAttribute("target-id", div.id);
+    btn.addEventListener("click", () => {
+        const parent = document.getElementById(div.id);
+        parent.remove();
+    });
+    btn.classList.add("btn", "btn-secondary");
+
+    div.appendChild(select);
+    div.appendChild(btn);
+    container.appendChild(div);
+    await loadSteps(select.id);
+}
+
 /**
  * Inicializa los eventos y la carga de datos al cargar la página.
  */
 function initializeApp() {
     const stopButton = document.querySelector(".stop-btn");
     const devicesList = document.getElementById("devices-select");
+    const addStepBtn = document.getElementById("add-step-to-demo");
     const canvas = document.getElementById("controlCanvas");
     const ctx = canvas.getContext("2d");
 
     getUserData();
     loadDevices();
     loadDemos();
+    loadSteps("steps-select");
 
     // 1. Configuración de Velocidades
     const inputSpeed = document.getElementById("speedInput");
@@ -439,6 +495,10 @@ function initializeApp() {
     });
 
     devicesList.addEventListener("change", updateSelectedDevice);
+
+    addStepBtn.addEventListener("click", () => {
+        addStepToDemo();
+    });
 }
 
 // Ejecutar la función de inicialización

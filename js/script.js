@@ -258,15 +258,47 @@ async function getUserData() {
     client_info.long = data.lon;
 }
 
+async function loadDevices() {
+    const devicesList = document.getElementById("devices-select");
+
+    const response = await fetch(`${API_BASE_URL}/api/devices`);
+
+    if (!response.ok) {
+        throw new Error(
+            `No se pudieron cargar los dispositivos. Usando 1 por defecto. ${response.status}`
+        );
+    }
+
+    const data = await response.json();
+
+    data.forEach((device) => {
+        const option = document.createElement("option");
+        option.value = device.device_id;
+        option.text = device.device_name;
+        if (device.device_id == 1) {
+            option.selected = true;
+        }
+        devicesList.appendChild(option);
+    });
+    updateSelectedDevice();
+}
+
+function updateSelectedDevice() {
+    const devicesList = document.getElementById("devices-select");
+    device_id = devicesList.value;
+}
+
 /**
- * 💡 Inicializa los eventos y la carga de datos al cargar la página.
+ * Inicializa los eventos y la carga de datos al cargar la página.
  */
 function initializeApp() {
     const stopButton = document.querySelector(".stop-btn");
+    const devicesList = document.getElementById("devices-select");
     const canvas = document.getElementById("controlCanvas");
     const ctx = canvas.getContext("2d");
 
     getUserData();
+    loadDevices();
 
     // 1. Configuración de Velocidades
     const inputSpeed = document.getElementById("speedInput");
@@ -382,6 +414,8 @@ function initializeApp() {
         // op_id: 10 -> 360 izquierda
         registerMovement(10, currentSpeed);
     });
+
+    devicesList.addEventListener("change", updateSelectedDevice);
 }
 
 // Ejecutar la función de inicialización

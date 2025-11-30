@@ -311,6 +311,16 @@ h2 {
     box-shadow: none;
 }
 
+.devices-select {
+    background-color: var(--bg-dark);
+    border: 2px solid var(--blue-p);
+    border-radius: 0.5rem;
+    color: var(--blue-p);
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0.6rem 1.2rem;
+}
+
 /* 3. Historial */
 .history-log {
     overflow-y: auto;

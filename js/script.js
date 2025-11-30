@@ -171,16 +171,14 @@ function getClickedAction(x, y, canvas) {
 // --- Lógica de la API y Inicialización ---
 
 /**
- * 💡 Simulación de la función para hacer una petición POST a la API
- * y registrar un movimiento.
- * @param {string} action - El movimiento a registrar (ej: 'adelante', 'detener').
- * @param {string} speed - La velocidad actual (ej: 'normal', 'reversa').
+ * Petición POST a la API y registrar un movimiento.
+ * @param {string} action - ID del movimiento a registrar
+ * @param {string} speed - ID de la velocidad actual
  */
 async function registerMovement(action, speed) {
     console.log(`📡 Enviando acción: ${action} a velocidad: ${speed}...`);
 
     try {
-        // --- SIMULACIÓN DE PETICIÓN API ---
         const response = await fetch(`${API_BASE_URL}/api/movement`, {
             method: "POST",
             headers: {
@@ -192,7 +190,6 @@ async function registerMovement(action, speed) {
                 speed_id: speed,
                 client_info: client_info,
             }),
-            // En un caso real, la respuesta de un POST indicaría éxito o el nuevo registro.
         });
 
         if (!response.ok) {
@@ -206,44 +203,36 @@ async function registerMovement(action, speed) {
         await loadMovementHistory();
     } catch (error) {
         console.error("❌ Fallo al registrar movimiento:", error);
-        alert(
-            `Fallo al conectar con la API para la acción "${action}". Revisa la consola.`
-        );
     }
 }
 
 /**
- * 💡 Simulación de la función para obtener el historial de movimientos de la API.
+ * Obtener el historial de movimientos de la API.
  */
 async function loadMovementHistory() {
     const historyList = document.getElementById("movement-history");
     historyList.innerHTML = ""; // Limpiar lista
 
     try {
-        // --- SIMULACIÓN DE PETICIÓN API ---
-        // En una aplicación real, se haría un GET a `${API_BASE_URL}/history`
+        let response = await fetch(
+            `${API_BASE_URL}/api/movements/last10/${device_id}`
+        );
 
-        // Datos simulados:
-        const simulatedHistory = [
-            { action: "detener", speed: "normal", time: "hace 5s" },
-            { action: "adelante", speed: "normal", time: "hace 10s" },
-            { action: "90-izquierda", speed: "normal", time: "hace 15s" },
-            {
-                action: "vuelta-atras-derecha",
-                speed: "reversa",
-                time: "hace 20s",
-            },
-            { action: "atras", speed: "reversa", time: "hace 25s" },
-        ];
+        if (!response.ok) {
+            throw new Error(
+                "Error solicitando últimos movimientos: ",
+                response.status
+            );
+        }
 
-        // const data = await response.json(); // En caso real
-        const data = simulatedHistory; // Usamos datos simulados
+        let data = await response.json();
+        data = data = data.slice(0, 5);
 
         data.forEach((item) => {
             const li = document.createElement("li");
-            li.textContent = `[${item.time}] Acción: ${item.action
-                .toUpperCase()
-                .replace(/-/g, " ")} | Velocidad: ${item.speed.toUpperCase()}`;
+            li.textContent = `${
+                item.event_time
+            } - Acción: ${item.operacion.toUpperCase()} - Velocidad: ${item.velocidad.toUpperCase()}`;
             historyList.appendChild(li);
         });
     } catch (error) {

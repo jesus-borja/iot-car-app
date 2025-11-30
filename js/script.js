@@ -265,7 +265,7 @@ async function loadDevices() {
 
     if (!response.ok) {
         throw new Error(
-            `No se pudieron cargar los dispositivos. Usando 1 por defecto. ${response.status}`
+            `Error al cargar los dispositivos. Usando 1 por defecto. ${response.status}`
         );
     }
 
@@ -288,6 +288,28 @@ function updateSelectedDevice() {
     device_id = devicesList.value;
 }
 
+async function loadDemos() {
+    const demosList = document.getElementById("demos-select");
+
+    const response = await fetch(`${API_BASE_URL}/api/demos`);
+
+    if (!response.ok) {
+        throw new Error(`Error al cargar demos. ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    data.forEach((demo) => {
+        const option = document.createElement("option");
+        option.value = demo.demo_id;
+        option.text = demo.demo_name;
+        if (demo.demo_id == 1) {
+            option.selected = true;
+        }
+        demosList.appendChild(option);
+    });
+}
+
 /**
  * Inicializa los eventos y la carga de datos al cargar la página.
  */
@@ -299,6 +321,7 @@ function initializeApp() {
 
     getUserData();
     loadDevices();
+    loadDemos();
 
     // 1. Configuración de Velocidades
     const inputSpeed = document.getElementById("speedInput");

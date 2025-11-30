@@ -97,13 +97,21 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Selecciona los pasos para crear la demo</p>
+                    <p>Nombre para la demo: </p>
+                    <input id="demo-name" type="text" class="form-control" placeholder="Paso lunar">
+                    <p class="mt-3">Selecciona los pasos para crear la demo</p>
 
-                    <div class="steps-container d-flex gap-3 flex-column mt-4 justify-content-center w-100"
+                    <div class="steps-container d-flex gap-3 flex-column mt-3 justify-content-center w-100"
                         id="steps-container">
                         <div class="steps-wrapper d-flex gap-3 justify-content-center w-100" id="steps-wrapper">
                             <select class="steps-select devices-select" name="steps-select" id="steps-select"></select>
-                            <input type="text" class="form-control" value="1s">
+                            <select class="devices-select" name="speed-select" id="speed-select">
+                                <option value="0">Reversa</option>
+                                <option value="1">Lento</option>
+                                <option value="2" selected>Normal</option>
+                                <option value="3">Rápido</option>
+                            </select>
+                            <input type="text" class="form-control" value="1s" pattern="[0-1]+s?">
                             <button disabled type="button" class="btn btn-secondary" id="step-remove"><svg
                                     xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                     class="bi bi-trash3" viewBox="0 0 16 16">

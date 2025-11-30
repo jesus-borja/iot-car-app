@@ -24,6 +24,8 @@ let device_id = 1;
 
 let hoveredAction = null;
 let userData = null;
+let currentSpeed = 2;
+let demoSteps = null;
 
 const client_info = {
     ip: "0.0.0.0",
@@ -290,6 +292,7 @@ function updateSelectedDevice() {
 
 async function loadDemos() {
     const demosList = document.getElementById("demos-select");
+    demosList.innerHTML = "";
 
     const response = await fetch(`${API_BASE_URL}/api/demos`);
 
@@ -310,17 +313,19 @@ async function loadDemos() {
     });
 }
 
-async function loadSteps(id) {
-    const stepstList = document.getElementById(id);
+async function loadDemoSteps() {
     const response = await fetch(`${API_BASE_URL}/api/demos/steps`);
 
     if (!response.ok) {
         throw new Error(`Error cargando los pasos. ${response.status}`);
     }
 
-    const data = await response.json();
+    demoSteps = await response.json();
+}
+function loadStepsIntoSelect(id) {
+    const stepstList = document.getElementById(id);
 
-    data.forEach((step) => {
+    demoSteps.forEach((step) => {
         const option = document.createElement("option");
         option.value = step.op_id;
         option.text = step.description;
@@ -354,6 +359,16 @@ async function addStepToDemo() {
     input.value = "1s";
     input.classList.add("form-control");
 
+    const speedSelect = document.createElement("select");
+    speedSelect.classList.add("devices-select");
+    speedSelect.setAttribute("name", "speed-select");
+    speedSelect.setAttribute("id", "speed-select");
+
+    speedSelect.innerHTML = `<option value='0'>Reversa</option>
+        <option value='1'>Lento</option>
+        <option value='2' selected>Normal</option>
+        <option value='3'>Rápido</option>`;
+
     const btn = document.createElement("button");
     btn.type = "button";
     btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
@@ -368,10 +383,11 @@ async function addStepToDemo() {
     });
 
     div.appendChild(select);
+    div.appendChild(speedSelect);
     div.appendChild(input);
     div.appendChild(btn);
     container.appendChild(div);
-    await loadSteps(select.id);
+    await loadStepsIntoSelect(select.id);
 }
 
 async function executeDemo() {
@@ -397,27 +413,116 @@ async function executeDemo() {
     await loadMovementHistory();
 }
 
+async function saveDemo() {
+    const demoName = document.getElementById("demo-name");
+
+    if (demoName.value === "" || demoName.value == null) {
+        alert("Agrega un nombre a la demo antes de guardarla.");
+        return;
+    }
+    const container = document.getElementById("steps-container");
+    const wrappers = container.children;
+    let demoSteps = [];
+    for (let i = 0; i < wrappers.length; ++i) {
+        let div = wrappers.item(i);
+        let values = div.children;
+
+        let operation = values.item(0);
+        let speed = values.item(1);
+        let time = values.item(2);
+
+        let timeValue = time.value.replace(/[a-zA-Z]/g, "");
+        if (timeValue === "") {
+            alert("El tiempo debe ser un número entero válido");
+            return;
+        }
+
+        step = {
+            op: operation.value,
+            speed: speed.value,
+            sec: timeValue,
+        };
+        demoSteps.push(step);
+    }
+    let payload = {
+        demo_name: demoName.value,
+        demo_steps: demoSteps,
+    };
+    console.log(payload);
+
+    const response = await fetch(`${API_BASE_URL}/api/demos`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error al guardar demo. ${response.status}`);
+    }
+    const result = await response.json();
+    if (result.status === "success") {
+        alert("Demo guardada exitosamente!");
+        resetStepsContainer();
+        await loadDemos();
+    } else {
+        alert(
+            "Hubo un error al guardar la demo. Revise los datos colocados y vuelva a intentar"
+        );
+    }
+}
+
+function resetStepsContainer() {
+    const container = document.getElementById("steps-container");
+    const demoName = document.getElementById("demo-name");
+
+    demoName.value = "";
+    // Limpiar contenido actual
+    container.innerHTML = "";
+
+    // Recrear la estructura original
+    container.innerHTML = `
+        <div class="steps-wrapper d-flex gap-3 justify-content-center w-100" id="steps-wrapper">
+            <select class="steps-select devices-select" name="steps-select" id="steps-select"></select>
+            <select class="devices-select" name="speed-select" id="speed-select">
+                <option value="0">Reversa</option>
+                <option value="1">Lento</option>
+                <option value="2" selected>Normal</option>
+                <option value="3">Rápido</option>
+            </select>
+            <input type="text" class="form-control" value="1s" pattern="[0-1]+s?">
+            <button disabled type="button" class="btn btn-secondary" id="step-remove">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+                    <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+                </svg>
+            </button>
+        </div>
+    `;
+    loadStepsIntoSelect("steps-select");
+    // reassignEventListeners();
+}
 /**
  * Inicializa los eventos y la carga de datos al cargar la página.
  */
-function initializeApp() {
+async function initializeApp() {
     const stopButton = document.querySelector(".stop-btn");
     const devicesList = document.getElementById("devices-select");
     const playDemoBtn = document.getElementById("play-demo");
     const addStepBtn = document.getElementById("add-step-to-demo");
+    const addDemoBtn = document.getElementById("add-demo-btn");
     const canvas = document.getElementById("controlCanvas");
     const ctx = canvas.getContext("2d");
 
-    getUserData();
-    loadDevices();
-    loadDemos();
-    loadSteps("steps-select");
+    await getUserData();
+    await loadDevices();
+    await loadDemos();
+    await loadDemoSteps();
+    loadStepsIntoSelect("steps-select");
 
     // 1. Configuración de Velocidades
     const inputSpeed = document.getElementById("speedInput");
     const labels = document.querySelectorAll(".label-item");
-
-    let currentSpeed = "normal"; // Valor inicial por defecto (valor 2)
 
     function updateSpeedInput() {
         const val = parseInt(inputSpeed.value);
@@ -536,6 +641,10 @@ function initializeApp() {
 
     addStepBtn.addEventListener("click", () => {
         addStepToDemo();
+    });
+
+    addDemoBtn.addEventListener("click", () => {
+        saveDemo();
     });
 }
 

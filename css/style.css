@@ -354,6 +354,12 @@ footer a {
     text-decoration: none;
 }
 
+/* ----- Formulario Agregar demo -------- */
+
+.steps-select {
+    max-width: 120px;
+}
+
 /* ----- Monitor -------- */
 
 /* =========================================

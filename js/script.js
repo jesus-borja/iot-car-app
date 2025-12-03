@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://3.226.80.130:5555";
+const API_BASE_URL = "api.carriot.online";
 
 // Definición de las 8 acciones
 // op_id: 3 -> detener

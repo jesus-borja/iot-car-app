@@ -85,6 +85,11 @@ h2 {
     text-align: center;
 }
 
+h3 {
+    color: var(--blue-p);
+    text-align: center;
+}
+
 /* --- Estilos para las velocidades --- */
 
 .speed-input-container {

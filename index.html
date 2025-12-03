@@ -11,8 +11,11 @@
 
 <body data-theme="dark" data-bs-theme="dark">
     <header class="d-flex justify-content-between align-items-center">
-        <div class="header-left">
+        <div class="header-left d-flex justify-content-between align-items-center gap-4">
             <h1 class="m-0">Carrito IoT</h1>
+            <div class="select-wrapper">
+                <select class="devices-select" name="devices-select" id="devices-select"></select>
+            </div>
         </div>
         <nav class="header-right">
             <button class="nav-button active">Control</button>
@@ -57,8 +60,7 @@
                     <h2>Movimiento</h2>
                     <div class="canvas-wrapper">
                         <div class="directional-pad-container">
-                            <!-- <canvas id="controlCanvas" width="480" height="480"></canvas> -->
-                            <canvas id="controlCanvas" width="400" height="400"></canvas>
+                            <canvas id="controlCanvas" width="480" height="480"></canvas>
                             <button class="stop-btn" data-action="detener">Detener</button>
                         </div>
                     </div>
@@ -72,9 +74,10 @@
                         </button>
                     </div>
 
-                    <div class="select-wrapper mt-4">
-                        <select class="devices-select" name="devices-select" id="devices-select"></select>
+                    <div class="mt-4">
+                        <h3 id="last-action">Cargando...</h3>
                     </div>
+
                 </section>
             </div>
 

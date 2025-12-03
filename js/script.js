@@ -22,9 +22,12 @@ const ACTIONS = [
 // ID del dispositivo por defecto
 let device_id = 1;
 
-let hoveredAction = null;
+// --- VARIABLES DE ANIMACIÓN (Nuevas) ---
+let hoveredIndex = -1; // -1 significa que el mouse no está sobre ninguna
+let segmentStates = new Array(ACTIONS.length).fill(0); // Estado de animación (0.0 a 1.0)
+
 let userData = null;
-let currentSpeed = 2;
+let currentSpeed = 2; // ID de velocidad por defecto (Normal)
 let demoSteps = null;
 
 const client_info = {
@@ -50,127 +53,181 @@ const ANGLE_OFFSET = -90; // Desplazamiento para que 0° (Adelante) esté arriba
 // Conversión de grados a radianes
 const degToRad = (degrees) => degrees * (Math.PI / 180);
 
-// --- Función de Dibujo del Canvas ---
+// --- LÓGICA DE ANIMACIÓN Y DIBUJO ---
 
+/**
+ * Actualiza progresivamente los valores de animación (Interpolación Lineal).
+ */
+function updateAnimations() {
+    const speed = 0.12; // Velocidad de la animación (suavidad)
+
+    for (let i = 0; i < NUM_ACTIONS; i++) {
+        const target = i === hoveredIndex ? 1 : 0;
+        const dist = target - segmentStates[i];
+
+        if (Math.abs(dist) > 0.001) {
+            segmentStates[i] += dist * speed;
+        } else {
+            segmentStates[i] = target;
+        }
+    }
+}
+
+/**
+ * Función principal de dibujo (Render Loop)
+ */
 function drawCanvas(ctx, canvas) {
     const W = canvas.width;
     const H = canvas.height;
     const center = { x: W / 2, y: H / 2 };
-    const innerRadius = 60;
-    const outerRadius = 200;
+
+    // Ajustes visuales de script2.js
+    const baseInnerRadius = 50;
+    const baseOuterRadius = 200;
 
     ctx.clearRect(0, 0, W, H);
 
+    // --- PASO 1: Dibujar segmentos NO seleccionados (Fondo) ---
     ACTIONS.forEach((action, index) => {
-        const startAngle =
-            index * SEGMENT_ANGLE + (ANGLE_OFFSET - SEGMENT_ANGLE / 2);
-        const endAngle =
-            (index + 1) * SEGMENT_ANGLE + (ANGLE_OFFSET - SEGMENT_ANGLE / 2);
-        const startRad = degToRad(startAngle);
-        const endRad = degToRad(endAngle);
-
-        ctx.beginPath();
-        ctx.moveTo(center.x, center.y);
-        ctx.arc(center.x, center.y, outerRadius, startRad, endRad);
-        ctx.closePath();
-
-        // --- LÓGICA DE COLOR (HOVER) ---
-        if (action.name === hoveredAction) {
-            // Si el mouse está encima, usamos el Naranja Gruvbox
-            ctx.fillStyle = "#fe8019";
-        } else {
-            // Colores normales alternados
-            ctx.fillStyle = index % 2 === 0 ? "#3c3836" : "#504945";
-        }
-
-        ctx.fill();
-
-        // Línea de separación
-        ctx.strokeStyle = "#282828";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // --- TEXTO ---
-        // Si está en hover, el texto cambia a oscuro para contraste, si no, claro
-        ctx.fillStyle = action.name === hoveredAction ? "#282828" : "#ebdbb2";
-
-        ctx.font = "bold 12px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        const midAngleDeg = startAngle + SEGMENT_ANGLE / 2;
-        const midAngleRad = degToRad(midAngleDeg);
-        const textRadius = innerRadius + (outerRadius - innerRadius) * 0.7;
-
-        const textX = center.x + textRadius * Math.cos(midAngleRad);
-        const textY = center.y + textRadius * Math.sin(midAngleRad);
-
-        ctx.save();
-        ctx.translate(textX, textY);
-        ctx.rotate(midAngleRad + degToRad(90));
-
-        const lines = action.text.split(" ");
-        lines.forEach((line, i) => {
-            ctx.fillText(line, 0, i * 14 - (lines.length - 1) * 7);
-        });
-
-        ctx.restore();
+        if (index === hoveredIndex) return; // Saltamos el activo para dibujarlo luego
+        drawSegment(
+            ctx,
+            index,
+            segmentStates[index],
+            center,
+            baseInnerRadius,
+            baseOuterRadius,
+            false
+        );
     });
 
-    // Borde interior (círculo central)
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, innerRadius, 0, degToRad(360));
-    ctx.strokeStyle = "#928374";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    // --- PASO 2: Dibujar el segmento ACTIVO (Primer plano) ---
+    if (hoveredIndex !== -1) {
+        drawSegment(
+            ctx,
+            hoveredIndex,
+            segmentStates[hoveredIndex],
+            center,
+            baseInnerRadius,
+            baseOuterRadius,
+            true
+        );
+    }
 }
 
-// --- Función de Detección de Clic (Hit Testing) ---
+/**
+ * Dibuja un segmento individual con transformaciones
+ */
+function drawSegment(ctx, index, animValue, center, innerR, outerR, isHovered) {
+    const action = ACTIONS[index];
+
+    // Cálculos de Geometría
+    const startAngle =
+        index * SEGMENT_ANGLE + (ANGLE_OFFSET - SEGMENT_ANGLE / 2);
+    const endAngle =
+        (index + 1) * SEGMENT_ANGLE + (ANGLE_OFFSET - SEGMENT_ANGLE / 2);
+    const midAngleDeg = startAngle + SEGMENT_ANGLE / 2;
+    const startRad = degToRad(startAngle);
+    const endRad = degToRad(endAngle);
+    const midAngleRad = degToRad(midAngleDeg);
+
+    // --- MAGIA DE LA ANIMACIÓN ---
+    // Desplazamiento y crecimiento basado en animValue (0.0 a 1.0)
+    const shiftDistance = animValue * 25;
+    const radiusExpansion = animValue * 10;
+
+    // Calculamos coordenadas de desplazamiento
+    const dx = Math.cos(midAngleRad) * shiftDistance;
+    const dy = Math.sin(midAngleRad) * shiftDistance;
+
+    ctx.save();
+    ctx.translate(dx, dy);
+
+    // Dibujamos la rebanada
+    ctx.beginPath();
+    ctx.moveTo(center.x, center.y);
+    ctx.arc(center.x, center.y, outerR + radiusExpansion, startRad, endRad);
+    ctx.closePath();
+
+    // Estilos
+    if (isHovered) {
+        ctx.fillStyle = "#fe8019"; // Naranja Gruvbox
+        // Sombra para efecto 3D "flotante"
+        ctx.shadowColor = "rgba(0,0,0, 0.6)";
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetX = 10;
+        ctx.shadowOffsetY = 10;
+    } else {
+        // Colores normales alternados
+        ctx.fillStyle = index % 2 === 0 ? "#3c3836" : "#504945";
+        ctx.shadowColor = "transparent";
+    }
+
+    ctx.fill();
+
+    // Borde
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#282828";
+    ctx.stroke();
+
+    // Resetear sombra para el texto
+    ctx.shadowColor = "transparent";
+
+    // --- TEXTO ---
+    ctx.fillStyle = isHovered ? "#282828" : "#ebdbb2";
+    // El texto también crece ligeramente
+    ctx.font = `bold ${11 + 3 * animValue}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const currentOuterR = outerR + radiusExpansion;
+    const textRadius = innerR + (currentOuterR - innerR) * 0.65;
+
+    const textX = center.x + textRadius * Math.cos(midAngleRad);
+    const textY = center.y + textRadius * Math.sin(midAngleRad);
+
+    ctx.save();
+    ctx.translate(textX, textY);
+    ctx.rotate(midAngleRad + degToRad(90));
+
+    const lines = action.text.split(" ");
+    lines.forEach((line, i) => {
+        ctx.fillText(line, 0, i * 14 - (lines.length - 1) * 7);
+    });
+
+    ctx.restore(); // Restaurar rotación texto
+    ctx.restore(); // Restaurar traslación segmento
+}
 
 /**
- * Determina qué acción ha sido clickeada en el Canvas.
+ * Determina sobre qué índice de acción está el mouse.
  */
-function getClickedAction(x, y, canvas) {
+function getHoveredIndex(x, y, canvas) {
     const W = canvas.width;
     const H = canvas.height;
     const center = { x: W / 2, y: H / 2 };
-    const innerRadius = 60;
+    const innerRadius = 50; // Sincronizado con drawCanvas
 
     const dx = x - center.x;
     const dy = y - center.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Si la distancia es menor al radio interior, es el botón 'Detener' (gestionado por HTML)
-    if (distance <= innerRadius) {
-        return null;
+    // Zona muerta central o fuera del límite máximo de expansión
+    if (distance <= innerRadius || distance > 240) {
+        return -1;
     }
 
-    // 1. Calcular el ángulo (theta) en grados (-180 a 180)
     let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    let normalizedAngle = angle - ANGLE_OFFSET;
+    if (normalizedAngle < 0) normalizedAngle += 360;
 
-    // 2. Normalizar el ángulo para que 0° (UP) funcione correctamente
-    // Aplicamos el desplazamiento inverso del dibujo (quitamos -90° y normalizamos 0-360)
-    let normalizedAngle = angle - ANGLE_OFFSET; // Angle + 90
-
-    if (normalizedAngle < 0) {
-        normalizedAngle += 360;
-    }
-
-    // 3. Encontrar el índice del segmento
-    // El ángulo central de cada segmento es: SEGMENT_ANGLE * index + SEGMENT_ANGLE/2
-
-    // Ajuste fino: Para que la línea divisoria esté justo en el límite,
-    // desplazamos el ángulo de detección a la mitad del segmento.
     const segmentStartAngle = SEGMENT_ANGLE / 2;
     const adjustedForIndex = (normalizedAngle + segmentStartAngle) % 360;
 
-    const index = Math.floor(adjustedForIndex / SEGMENT_ANGLE);
-
-    // El índice 8 (si ocurre por un clic en el límite) se ajusta a 0.
-    return ACTIONS[index % NUM_ACTIONS];
+    return Math.floor(adjustedForIndex / SEGMENT_ANGLE) % NUM_ACTIONS;
 }
 
-// --- Lógica de la API y Inicialización ---
+// --- Lógica de la API y Funciones Auxiliares (Original de script.js) ---
 
 /**
  * Petición POST a la API y registrar un movimiento.
@@ -203,6 +260,7 @@ async function registerMovement(action, speed) {
 
         // Después de un registro exitoso, actualizamos el historial
         await loadMovementHistory();
+        // Actualizar la etiqueta
     } catch (error) {
         console.error("❌ Fallo al registrar movimiento:", error);
     }
@@ -213,7 +271,7 @@ async function registerMovement(action, speed) {
  */
 async function loadMovementHistory() {
     const historyList = document.getElementById("movement-history");
-    historyList.innerHTML = ""; // Limpiar lista
+    historyList.innerHTML = "";
 
     try {
         let response = await fetch(
@@ -228,7 +286,7 @@ async function loadMovementHistory() {
         }
 
         let data = await response.json();
-        data = data = data.slice(0, 5);
+        data = data.slice(0, 5);
 
         data.forEach((item) => {
             const li = document.createElement("li");
@@ -244,20 +302,18 @@ async function loadMovementHistory() {
 }
 
 async function getUserData() {
-    let response = await fetch("https://ipapi.co/json");
-    if (!response.ok) {
-        console.error(
-            `No se pudieron cargar los datos del usuario: ${response.status}. Usando datos por defecto.`
-        );
+    try {
+        let response = await fetch("https://ipapi.co/json");
+        if (!response.ok) throw new Error("API IP Error");
+        const data = await response.json();
+        client_info.ip = data.ip;
+        client_info.country = data.country_name;
+        client_info.city = data.city;
+        client_info.lat = data.latitude;
+        client_info.long = data.longitude;
+    } catch (e) {
+        console.warn("Usando datos por defecto para ubicación.");
     }
-
-    const data = await response.json();
-
-    client_info.ip = data.ip;
-    client_info.country = data.country_name;
-    client_info.city = data.city;
-    client_info.lat = data.latitude;
-    client_info.long = data.longitude;
 }
 
 async function loadDevices() {
@@ -322,6 +378,7 @@ async function loadDemoSteps() {
 
     demoSteps = await response.json();
 }
+
 function loadStepsIntoSelect(id) {
     const stepstList = document.getElementById(id);
 
@@ -376,10 +433,8 @@ async function addStepToDemo() {
 </svg>`;
     btn.id = `step-remove-${id}`;
     btn.classList.add("btn", "btn-secondary");
-
     btn.addEventListener("click", () => {
-        const parent = document.getElementById(div.id);
-        parent.remove();
+        div.remove();
     });
 
     div.appendChild(select);
@@ -387,7 +442,7 @@ async function addStepToDemo() {
     div.appendChild(input);
     div.appendChild(btn);
     container.appendChild(div);
-    await loadStepsIntoSelect(select.id);
+    loadStepsIntoSelect(select.id);
 }
 
 async function executeDemo() {
@@ -415,17 +470,17 @@ async function executeDemo() {
 
 async function saveDemo() {
     const demoName = document.getElementById("demo-name");
-
-    if (demoName.value === "" || demoName.value == null) {
-        alert("Agrega un nombre a la demo antes de guardarla.");
+    if (!demoName.value) {
+        alert("Agrega un nombre a la demo.");
         return;
     }
     const container = document.getElementById("steps-container");
     const wrappers = container.children;
-    let demoSteps = [];
+    let demoStepsArr = [];
+
     for (let i = 0; i < wrappers.length; ++i) {
         let div = wrappers.item(i);
-        let values = div.children;
+        let values = div.children; // select, speed, input, btn
 
         let operation = values.item(0);
         let speed = values.item(1);
@@ -437,18 +492,17 @@ async function saveDemo() {
             return;
         }
 
-        step = {
+        demoStepsArr.push({
             op: operation.value,
             speed: speed.value,
             sec: timeValue,
-        };
-        demoSteps.push(step);
+        });
     }
-    let payload = {
+
+    const payload = {
         demo_name: demoName.value,
-        demo_steps: demoSteps,
+        demo_steps: demoStepsArr,
     };
-    console.log(payload);
 
     const response = await fetch(`${API_BASE_URL}/api/demos`, {
         method: "POST",
@@ -467,21 +521,14 @@ async function saveDemo() {
         resetStepsContainer();
         await loadDemos();
     } else {
-        alert(
-            "Hubo un error al guardar la demo. Revise los datos colocados y vuelva a intentar"
-        );
+        alert("Hubo un error al guardar la demo.");
     }
 }
 
 function resetStepsContainer() {
     const container = document.getElementById("steps-container");
     const demoName = document.getElementById("demo-name");
-
     demoName.value = "";
-    // Limpiar contenido actual
-    container.innerHTML = "";
-
-    // Recrear la estructura original
     container.innerHTML = `
         <div class="steps-wrapper d-flex gap-3 justify-content-center w-100" id="steps-wrapper">
             <select class="steps-select devices-select" name="steps-select" id="steps-select"></select>
@@ -492,7 +539,7 @@ function resetStepsContainer() {
                 <option value="3">Rápido</option>
             </select>
             <input type="text" class="form-control" value="1s" pattern="[0-1]+s?">
-            <button disabled type="button" class="btn btn-secondary" id="step-remove">
+            <button disabled type="button" class="btn btn-secondary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
                     <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
                 </svg>
@@ -500,10 +547,10 @@ function resetStepsContainer() {
         </div>
     `;
     loadStepsIntoSelect("steps-select");
-    // reassignEventListeners();
 }
+
 /**
- * Inicializa los eventos y la carga de datos al cargar la página.
+ * Inicializa los eventos y la carga de datos.
  */
 async function initializeApp() {
     const stopButton = document.querySelector(".stop-btn");
@@ -520,6 +567,45 @@ async function initializeApp() {
     await loadDemoSteps();
     loadStepsIntoSelect("steps-select");
 
+    // --- LOOP DE ANIMACIÓN ---
+    function animate() {
+        updateAnimations(); // Calcular frames intermedios
+        drawCanvas(ctx, canvas); // Dibujar
+        requestAnimationFrame(animate); // Repetir
+    }
+    // Iniciar el loop
+    requestAnimationFrame(animate);
+
+    // --- EVENTOS DEL CANVAS (ANIMADOS) ---
+    canvas.addEventListener("mousemove", (event) => {
+        const rect = canvas.getBoundingClientRect();
+        // Escala por si el CSS cambia el tamaño
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+
+        // Actualizamos el índice global para la animación
+        hoveredIndex = getHoveredIndex(x, y, canvas);
+
+        // Cambiar cursor
+        canvas.style.cursor = hoveredIndex !== -1 ? "pointer" : "default";
+    });
+
+    canvas.addEventListener("mouseleave", () => {
+        hoveredIndex = -1;
+    });
+
+    canvas.addEventListener("click", () => {
+        // Usamos el índice de animación para saber qué acción se presionó
+        if (hoveredIndex !== -1) {
+            const action = ACTIONS[hoveredIndex];
+            // Llamamos a la API con el op_id real
+            registerMovement(action.op_id, currentSpeed);
+        }
+    });
+
     // 1. Configuración de Velocidades
     const inputSpeed = document.getElementById("speedInput");
     const labels = document.querySelectorAll(".label-item");
@@ -527,18 +613,14 @@ async function initializeApp() {
     function updateSpeedInput() {
         const val = parseInt(inputSpeed.value);
         const setting = SPEED_MAP[val];
-
-        // 1. Actualizar variable global para la API
         currentSpeed = setting.id;
 
-        // 2. Actualizar color de la palanca (Thumb) si es reversa
         if (val === 0) {
             inputSpeed.classList.add("reversa-active");
         } else {
             inputSpeed.classList.remove("reversa-active");
         }
 
-        // 3. Destacar la etiqueta correspondiente a la derecha
         labels.forEach((lbl) => {
             lbl.classList.remove("active");
             if (parseInt(lbl.dataset.val) === val) {
@@ -547,106 +629,38 @@ async function initializeApp() {
         });
     }
 
-    // Evento: Al mover el slider
     inputSpeed.addEventListener("input", updateSpeedInput);
-
-    // Evento: Clic en las etiquetas de texto para mover la palanca
     labels.forEach((label) => {
         label.addEventListener("click", () => {
             inputSpeed.value = label.dataset.val;
             updateSpeedInput();
         });
     });
-
-    // Inicializar visualmente
     updateSpeedInput();
 
-    // 2. Configuración del Botón DETENER
+    // 2. Botones de Control
     stopButton.addEventListener("click", () => {
-        // op_id: 3 -> detener
-        registerMovement(3, currentSpeed);
+        registerMovement(3, currentSpeed); // op_id: 3 -> detener
     });
 
-    // 3. Manejo de Clics en el CANVAS
-    canvas.addEventListener("click", (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        const action = getClickedAction(x, y, canvas);
-
-        if (action) {
-            registerMovement(action.op_id, currentSpeed);
-        }
-    });
-
-    canvas.addEventListener("mousemove", (event) => {
-        const rect = canvas.getBoundingClientRect();
-
-        // Calcular escala por si el CSS redimensionó el canvas en móviles
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-
-        const x = (event.clientX - rect.left) * scaleX;
-        const y = (event.clientY - rect.top) * scaleY;
-
-        // Detectar sobre qué acción estamos
-        const newHoveredAction = getClickedAction(x, y, canvas).name;
-
-        // Cambiar el cursor: 'pointer' si hay acción, 'default' si está en el centro o fuera
-        canvas.style.cursor = newHoveredAction ? "pointer" : "default";
-
-        // Solo redibujar si cambiamos de sección (optimización de rendimiento)
-        if (newHoveredAction !== hoveredAction) {
-            hoveredAction = newHoveredAction;
-            drawCanvas(ctx, canvas);
-        }
-    });
-
-    // Cuando el mouse sale del canvas, limpiamos el hover
-    canvas.addEventListener("mouseleave", () => {
-        if (hoveredAction !== null) {
-            hoveredAction = null;
-            drawCanvas(ctx, canvas);
-        }
-    });
-
-    // 4. Dibujar el Canvas inicialmente y manejar redimensionamiento
-    drawCanvas(ctx, canvas);
-    window.addEventListener("resize", () => drawCanvas(ctx, canvas));
-
-    // 5. Carga Inicial del Historial
-    loadMovementHistory();
-
-    // 6. Configuración de Botones 360
     const btnSpinLeft = document.getElementById("spinLeft");
     const btnSpinRight = document.getElementById("spinRight");
 
     btnSpinLeft.addEventListener("click", () => {
-        // Enviamos la acción y la velocidad actual definida por la palanca/slider
-        // op_id: 11 -> 360 izquierda
-        registerMovement(11, currentSpeed);
+        registerMovement(11, currentSpeed); // op_id: 11
     });
 
     btnSpinRight.addEventListener("click", () => {
-        // op_id: 10 -> 360 izquierda
-        registerMovement(10, currentSpeed);
+        registerMovement(10, currentSpeed); // op_id: 10
     });
 
     devicesList.addEventListener("change", updateSelectedDevice);
+    playDemoBtn.addEventListener("click", executeDemo);
+    addStepBtn.addEventListener("click", addStepToDemo);
+    addDemoBtn.addEventListener("click", saveDemo);
 
-    playDemoBtn.addEventListener("click", () => {
-        executeDemo();
-    });
-
-    addStepBtn.addEventListener("click", () => {
-        addStepToDemo();
-    });
-
-    addDemoBtn.addEventListener("click", () => {
-        saveDemo();
-    });
+    // 5. Carga Inicial del Historial
+    loadMovementHistory();
 }
 
-// Ejecutar la función de inicialización
 document.addEventListener("DOMContentLoaded", initializeApp);

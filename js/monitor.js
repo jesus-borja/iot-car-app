@@ -1,6 +1,6 @@
 // Configuración
-const API_URL = "http://3.226.80.130:5555";
-const socket = io(API_URL);
+const API_BASE_URL = "http://3.226.80.130:5555";
+const socket = io(API_BASE_URL);
 
 // Mapeos para textos amigables
 const OP_MAP = {
@@ -22,7 +22,7 @@ const OBS_MAP = {
     2: "Obs. Adelante-Izq",
     3: "Obs. Adelante-Der",
     4: "Bloqueo Total (Izq-Der)",
-    5: "Obstáculo Trasero",
+    5: "Retroceso",
 };
 
 // ID del dispositivo a monitorear (Por defecto 1)
@@ -71,7 +71,7 @@ async function fetchInitialData() {
     try {
         // 1. Cargar Movimientos
         const resMov = await fetch(
-            `${API_URL}/api/history/${TARGET_DEVICE_ID}`
+            `${API_BASE_URL}/api/movements/last10/${TARGET_DEVICE_ID}`
         );
         if (resMov.ok) {
             const movs = await resMov.json();
@@ -91,9 +91,9 @@ async function fetchInitialData() {
             }
         }
 
-        // 2. Cargar Obstáculos (AQUÍ ESTABA EL ERROR)
+        // 2. Cargar Obstáculos
         const resObs = await fetch(
-            `${API_URL}/api/history/obstacles/${TARGET_DEVICE_ID}`
+            `${API_BASE_URL}/api/obstacles/last10/${TARGET_DEVICE_ID}`
         );
         if (resObs.ok) {
             const obs = await resObs.json();
@@ -122,14 +122,14 @@ async function fetchInitialData() {
         }
 
         // 3. Cargar Demos
-        const resDemo = await fetch(`${API_URL}/api/history/demos`);
+        const resDemo = await fetch(`${API_BASE_URL}/api/demos`);
         if (resDemo.ok) {
             const data = await resDemo.json();
             const list = document.getElementById("demo-history-list");
             if (list) {
                 // Pequeña protección por si el elemento no carga a tiempo
                 list.innerHTML = "";
-                data.demos.forEach((demo) => {
+                data.forEach((demo) => {
                     const li = document.createElement("li");
                     li.innerHTML = `
                         <span class="fw-bold" style="color: var(--orange-p)">🎬 ${
@@ -298,7 +298,7 @@ async function loadRecentDemos() {
     try {
         // Asumiendo que creaste un endpoint GET /api/demos en Flask
         // Si no, esto fallará silenciosamente.
-        const response = await fetch(`${API_URL}/api/demos`);
+        const response = await fetch(`${API_BASE_URL}/api/demos`);
         if (response.ok) {
             const data = await response.json(); // { demos: [...] }
             const list = document.getElementById("demo-history-list");
@@ -321,7 +321,7 @@ async function loadRecentDemos() {
             "No se pudo cargar historial de demos (Endpoint no disponible)"
         );
         document.getElementById("demo-history-list").innerHTML =
-            "<li class='text-center'>Esperando ejecución de demos...</li>";
+            "<li class='text-center'>Esperando demos...</li>";
     }
 }
 

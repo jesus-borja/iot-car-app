@@ -39,10 +39,10 @@ const client_info = {
 };
 
 const SPEED_MAP = {
-    3: { name: "rapido", id: 1 },
-    2: { name: "normal", id: 2 },
-    1: { name: "lento", id: 3 },
-    0: { name: "reversa", id: 4 },
+    3: { name: "Rápido", id: 1 },
+    2: { name: "Normal", id: 2 },
+    1: { name: "Lento", id: 3 },
+    0: { name: "Reversa", id: 4 },
 };
 
 // Constantes de cálculo
@@ -260,7 +260,6 @@ async function registerMovement(action, speed) {
 
         // Después de un registro exitoso, actualizamos el historial
         await loadMovementHistory();
-        // Actualizar la etiqueta
     } catch (error) {
         console.error("❌ Fallo al registrar movimiento:", error);
     }
@@ -549,6 +548,33 @@ function resetStepsContainer() {
     loadStepsIntoSelect("steps-select");
 }
 
+function updateStatus(actionText, speedText, source = "WS") {
+    document.getElementById("current-action").innerText = actionText;
+    document.getElementById("current-speed").innerText = speedText;
+    console.log(`[${source}] Estado actualizado: ${actionText} @ ${speedText}`);
+}
+
+async function fetchLastStatus() {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/api/movements/last/${device_id}`
+        );
+        if (response.ok) {
+            const status = await response.json();
+
+            // La BD nos da el texto directo (operacion, velocidad)
+            const actionText = status.operacion || "Desconocido";
+            const speedText = status.velocidad || "Normal";
+
+            updateStatus(actionText, speedText, "REST");
+        } else {
+            updateStatus("Sin Registros", "0", "REST");
+        }
+    } catch (error) {
+        console.error("Fallo al cargar estado inicial:", error);
+    }
+}
+
 /**
  * Inicializa los eventos y la carga de datos.
  */
@@ -566,6 +592,32 @@ async function initializeApp() {
     await loadDemos();
     await loadDemoSteps();
     loadStepsIntoSelect("steps-select");
+
+    // --- WEBSOCKET
+    const socket = io(API_BASE_URL);
+
+    socket.on("connect", () => {
+        // Unirse a la sala de monitoreo para recibir actualizaciones en tiempo real
+        socket.emit("join_monitor_room");
+
+        // Consultar el estado más reciente al cargar la página
+        fetchLastStatus();
+    });
+
+    socket.on("monitor_update", (payload) => {
+        const data = payload.data;
+        if (!data) {
+            return;
+        }
+        console.log("payload: ", data);
+        const actionText =
+            demoSteps[data.op - 1].description || "Acción Desconocida";
+        let speedText = "---";
+        if (data.speed) {
+            speedText = SPEED_MAP[4 - data.speed].name;
+        }
+        updateStatus(actionText, speedText, "WS");
+    });
 
     // --- LOOP DE ANIMACIÓN ---
     function animate() {

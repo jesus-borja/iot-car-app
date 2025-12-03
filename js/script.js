@@ -244,7 +244,7 @@ async function loadMovementHistory() {
 }
 
 async function getUserData() {
-    let response = await fetch("http://ip-api.com/json");
+    let response = await fetch("https://ipapi.co/json");
     if (!response.ok) {
         console.error(
             `No se pudieron cargar los datos del usuario: ${response.status}. Usando datos por defecto.`
@@ -253,11 +253,11 @@ async function getUserData() {
 
     const data = await response.json();
 
-    client_info.ip = data.query;
-    client_info.country = data.country;
+    client_info.ip = data.ip;
+    client_info.country = data.country_name;
     client_info.city = data.city;
-    client_info.lat = data.lat;
-    client_info.long = data.lon;
+    client_info.lat = data.latitude;
+    client_info.long = data.longitude;
 }
 
 async function loadDevices() {

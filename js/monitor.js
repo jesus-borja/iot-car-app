@@ -1,5 +1,5 @@
 // Configuración
-const API_BASE_URL = "api.carriot.online";
+const API_BASE_URL = "https://api.carriot.online";
 const socket = io(API_BASE_URL);
 
 // Mapeos para textos amigables

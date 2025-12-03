@@ -1,4 +1,4 @@
-const API_BASE_URL = "api.carriot.online";
+const API_BASE_URL = "https://api.carriot.online";
 
 // Definición de las 8 acciones
 // op_id: 3 -> detener
